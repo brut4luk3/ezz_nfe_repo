@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/ui/components/app_card.dart';
+import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/confirm_dialog.dart';
 import '../../../core/ui/widgets/error_view.dart';
 import '../../../core/ui/widgets/loading_view.dart';
@@ -33,12 +34,10 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Buscar cliente',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
-              ),
+            AppTextField(
+              label: 'Buscar cliente',
+              prefixIcon: const Icon(Icons.search),
+              textInputAction: TextInputAction.search,
               onChanged: (value) => setState(() => _query = value.trim()),
             ),
             const SizedBox(height: 12),

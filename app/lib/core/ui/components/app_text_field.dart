@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// Text field compartilhado com suporte a:
+/// - [prefixIcon] e [suffixIcon] (ex: lupa para busca, eye para senha)
+/// - [textInputAction] configurável (send, next, search, etc.)
+/// - [onChanged] para filtros em tempo real
+/// - [obscureText] com toggle de visibilidade automático
 class AppTextField extends StatefulWidget {
   final String label;
   final TextEditingController? controller;
@@ -7,7 +12,10 @@ class AppTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
   final void Function(String)? onSubmitted;
+  final void Function(String)? onChanged;
   final TextInputType? keyboardType;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
 
   const AppTextField({
     super.key,
@@ -17,7 +25,10 @@ class AppTextField extends StatefulWidget {
     this.textInputAction,
     this.focusNode,
     this.onSubmitted,
+    this.onChanged,
     this.keyboardType,
+    this.prefixIcon,
+    this.suffixIcon,
   });
 
   @override
@@ -41,6 +52,18 @@ class _AppTextFieldState extends State<AppTextField> {
     }
   }
 
+  Widget? _buildSuffixIcon() {
+    if (widget.obscureText) {
+      return IconButton(
+        icon: Icon(
+          _obscureText ? Icons.visibility_off : Icons.visibility,
+        ),
+        onPressed: () => setState(() => _obscureText = !_obscureText),
+      );
+    }
+    return widget.suffixIcon;
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveAction = widget.textInputAction ??
@@ -60,17 +83,12 @@ class _AppTextFieldState extends State<AppTextField> {
       textInputAction: effectiveAction,
       keyboardType: widget.keyboardType,
       onSubmitted: handleSubmitted,
+      onChanged: widget.onChanged,
       decoration: InputDecoration(
         labelText: widget.label,
         border: const OutlineInputBorder(),
-        suffixIcon: widget.obscureText
-            ? IconButton(
-                icon: Icon(
-                  _obscureText ? Icons.visibility_off : Icons.visibility,
-                ),
-                onPressed: () => setState(() => _obscureText = !_obscureText),
-              )
-            : null,
+        prefixIcon: widget.prefixIcon,
+        suffixIcon: _buildSuffixIcon(),
       ),
     );
   }
