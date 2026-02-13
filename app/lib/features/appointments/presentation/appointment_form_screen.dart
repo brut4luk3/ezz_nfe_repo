@@ -168,20 +168,25 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                 return const Text('Cadastre um cliente primeiro.');
               }
               return DropdownButtonFormField<String>(
-                initialValue: _clientId,
+                value: _clientId ?? '',
                 decoration: const InputDecoration(
-                  labelText: 'Cliente',
+                  labelText: 'Cliente *',
                   border: OutlineInputBorder(),
                 ),
-                items: clients
-                    .map<DropdownMenuItem<String>>(
-                      (c) => DropdownMenuItem<String>(
-                        value: c.id,
-                        child: Text(c.name),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) => setState(() => _clientId = value),
+                items: [
+                  const DropdownMenuItem(
+                    value: '',
+                    child: Text('Selecione um cliente'),
+                  ),
+                  ...clients.map<DropdownMenuItem<String>>(
+                    (c) => DropdownMenuItem<String>(
+                      value: c.id,
+                      child: Text(c.name),
+                    ),
+                  ),
+                ],
+                onChanged: (value) =>
+                    setState(() => _clientId = (value == null || value.isEmpty) ? null : value),
               );
             },
           ),
@@ -197,7 +202,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Servicos'),
+                  const Text('Servicos *'),
                   const SizedBox(height: 8),
                   ...services.map((s) {
                     final checked = _serviceIds.contains(s.id);
@@ -233,6 +238,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
           const SizedBox(height: 12),
           AppTextField(
             label: 'Observacoes',
+            isOptional: true,
             controller: _notesController,
             textInputAction: TextInputAction.send,
           ),
@@ -250,12 +256,15 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
           ],
           PrimaryButton(
             label: 'Salvar',
-            onPressed: () => servicesAsync.when(
-              loading: () {},
-              error: (_, _) {},
-              data: (services) => _submit(services),
-            ),
+            onPressed: (_clientId != null && _serviceIds.isNotEmpty)
+                ? () => servicesAsync.when(
+                      loading: () {},
+                      error: (_, _) {},
+                      data: (services) => _submit(services),
+                    )
+                : null,
             isLoading: actionState.isLoading,
+            disabled: _clientId == null || _serviceIds.isEmpty,
           ),
         ],
       ),

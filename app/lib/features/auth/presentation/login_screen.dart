@@ -61,20 +61,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         const SizedBox(height: 24),
         AppTextField(
           label: 'Email',
+          isRequired: true,
           controller: _emailController,
           focusNode: _emailFocus,
           nextFocusNode: _passwordFocus,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 12),
         AppTextField(
           label: 'Senha',
+          isRequired: true,
           controller: _passwordController,
           focusNode: _passwordFocus,
           obscureText: true,
           textInputAction: TextInputAction.send,
           onSubmitted: (_) => _submit(),
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 16),
         if (_localError != null) ...[
@@ -97,6 +101,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           label: 'Entrar',
           onPressed: _submit,
           isLoading: authState.isLoading,
+          disabled: _emailController.text.trim().isEmpty ||
+              _passwordController.text.isEmpty,
         ),
         const SizedBox(height: 12),
         OutlinedButton(

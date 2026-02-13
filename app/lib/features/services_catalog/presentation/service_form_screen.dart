@@ -55,6 +55,12 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     return (value * 100).round();
   }
 
+  bool _isFormValid() {
+    final name = _nameController.text.trim();
+    final priceCents = _parsePriceCents(_priceController.text.trim());
+    return name.isNotEmpty && priceCents != null;
+  }
+
   Future<void> _submit() async {
     setState(() => _localError = null);
     final name = _nameController.text.trim();
@@ -127,22 +133,27 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
         children: [
           AppTextField(
             label: 'Nome',
+            isRequired: true,
             controller: _nameController,
             focusNode: _nameFocus,
             nextFocusNode: _priceFocus,
             textInputAction: TextInputAction.next,
+            onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'Preco (ex: 49.90)',
+            isRequired: true,
             controller: _priceController,
             focusNode: _priceFocus,
             nextFocusNode: _durationFocus,
             textInputAction: TextInputAction.next,
+            onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'Duracao (min)',
+            isOptional: true,
             controller: _durationController,
             focusNode: _durationFocus,
             nextFocusNode: _descriptionFocus,
@@ -151,6 +162,7 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
           const SizedBox(height: 12),
           AppTextField(
             label: 'Descricao',
+            isOptional: true,
             controller: _descriptionController,
             focusNode: _descriptionFocus,
             textInputAction: TextInputAction.send,
@@ -170,6 +182,7 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
             label: 'Salvar',
             onPressed: _submit,
             isLoading: actionState.isLoading,
+            disabled: !_isFormValid(),
           ),
         ],
       ),

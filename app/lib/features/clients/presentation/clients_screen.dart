@@ -102,15 +102,15 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     final q = query.toLowerCase();
     return clients.where((c) {
       final name = c.name.toLowerCase();
-      final phone = (c.phone ?? '').toLowerCase();
+      final phone = c.phone.toLowerCase();
       return name.contains(q) || phone.contains(q);
     }).toList();
   }
 
   String _subtitle(Client client) {
     final parts = <String>[];
-    if (client.phone != null && client.phone!.isNotEmpty) {
-      parts.add(client.phone!);
+    if (client.phone.isNotEmpty) {
+      parts.add(client.phone);
     }
     if (client.cpf != null && client.cpf!.isNotEmpty) {
       parts.add(client.cpf!);

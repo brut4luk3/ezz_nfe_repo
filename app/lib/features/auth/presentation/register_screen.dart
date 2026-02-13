@@ -76,6 +76,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
   }
 
+  bool _isFormValid() {
+    final fullName = _fullNameController.text.trim();
+    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirm = _confirmController.text;
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
+      return false;
+    }
+    final phoneDigits = phone.replaceAll(RegExp(r'\D'), '');
+    if (phoneDigits.length < 10) return false;
+    if (password.length < 6) return false;
+    if (password != confirm) return false;
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
@@ -97,47 +113,57 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         const SizedBox(height: 24),
         AppTextField(
           label: 'Nome completo',
+          isRequired: true,
           controller: _fullNameController,
           focusNode: _fullNameFocus,
           nextFocusNode: _phoneFocus,
           textInputAction: TextInputAction.next,
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 12),
         AppTextField(
           label: 'Telefone (ex: (47) 99999-9999)',
+          isRequired: true,
           controller: _phoneController,
           focusNode: _phoneFocus,
           nextFocusNode: _emailFocus,
           keyboardType: TextInputType.phone,
           inputFormatters: [BrazilianPhoneInputFormatter()],
           textInputAction: TextInputAction.next,
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 12),
         AppTextField(
           label: 'Email',
+          isRequired: true,
           controller: _emailController,
           focusNode: _emailFocus,
           nextFocusNode: _passwordFocus,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 12),
         AppTextField(
           label: 'Senha',
+          isRequired: true,
           controller: _passwordController,
           focusNode: _passwordFocus,
           nextFocusNode: _confirmFocus,
           obscureText: true,
           textInputAction: TextInputAction.next,
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 12),
         AppTextField(
           label: 'Confirmar senha',
+          isRequired: true,
           controller: _confirmController,
           focusNode: _confirmFocus,
           obscureText: true,
           textInputAction: TextInputAction.send,
           onSubmitted: (_) => _submit(),
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 16),
         if (_localError != null) ...[
@@ -160,6 +186,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           label: 'Criar conta',
           onPressed: _submit,
           isLoading: authState.isLoading,
+          disabled: !_isFormValid(),
         ),
         const SizedBox(height: 12),
         OutlinedButton(

@@ -8,6 +8,10 @@ import 'package:flutter/services.dart';
 /// - [obscureText] com toggle de visibilidade automático
 class AppTextField extends StatefulWidget {
   final String label;
+  /// Quando true, exibe * ao lado da label (campo obrigatório).
+  final bool isRequired;
+  /// Quando true, exibe " (opcional)" após a label.
+  final bool isOptional;
   final TextEditingController? controller;
   final bool obscureText;
   final TextInputAction? textInputAction;
@@ -25,6 +29,8 @@ class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,
     required this.label,
+    this.isRequired = false,
+    this.isOptional = false,
     this.controller,
     this.obscureText = false,
     this.textInputAction,
@@ -57,6 +63,12 @@ class _AppTextFieldState extends State<AppTextField> {
     if (widget.obscureText != oldWidget.obscureText) {
       _obscureText = widget.obscureText;
     }
+  }
+
+  String _buildLabelText() {
+    if (widget.isRequired) return '${widget.label} *';
+    if (widget.isOptional) return '${widget.label} (opcional)';
+    return widget.label;
   }
 
   Widget? _buildSuffixIcon() {
@@ -107,7 +119,7 @@ class _AppTextFieldState extends State<AppTextField> {
       onSubmitted: handleSubmitted,
       onChanged: widget.onChanged,
       decoration: InputDecoration(
-        labelText: widget.label,
+        labelText: _buildLabelText(),
         border: const OutlineInputBorder(),
         prefixIcon: widget.prefixIcon,
         suffixIcon: _buildSuffixIcon(),

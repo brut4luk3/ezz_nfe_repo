@@ -4,12 +4,15 @@ class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
+  /// Quando true, o botao fica desabilitado (ex: formulario incompleto).
+  final bool disabled;
 
   const PrimaryButton({
     super.key,
     required this.label,
     this.onPressed,
     this.isLoading = false,
+    this.disabled = false,
   });
 
   @override
@@ -17,7 +20,7 @@ class PrimaryButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: FilledButton(
-        onPressed: isLoading ? null : onPressed,
+        onPressed: (isLoading || disabled) ? null : onPressed,
         child: isLoading
             ? SizedBox(
                 height: 22,
