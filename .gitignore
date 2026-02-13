@@ -1,0 +1,45 @@
+﻿# Firebase credentials (NUNCA commitar)
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options_dev.dart
+**/firebase_options_prod.dart
+
+# Flutter
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+**/build/
+coverage/
+
+# Flutter platform/generated artifacts
+**/android/.gradle/
+**/android/local.properties
+**/android/key.properties
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/macos/Flutter/ephemeral/
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# Firebase / Functions (future backend)
+backend/functions/node_modules/
+backend/functions/lib/
+.firebase/
+.firebaserc.local
+firebase-debug.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE / Editor
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

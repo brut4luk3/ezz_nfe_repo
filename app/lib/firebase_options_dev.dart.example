@@ -1,0 +1,22 @@
+// Gerado pelo FlutterFire CLI. Copie para firebase_options_dev.dart
+// ou execute: flutterfire configure -p ezz-nfe-dev -o lib/firebase_options_dev.dart ...
+import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+
+class DefaultFirebaseOptions {
+  static FirebaseOptions get currentPlatform {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return android;
+      default:
+        throw UnsupportedError('Plataforma não configurada');
+    }
+  }
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'YOUR_DEV_API_KEY',
+    appId: 'YOUR_DEV_APP_ID',
+    messagingSenderId: 'YOUR_DEV_SENDER_ID',
+    projectId: 'ezz-nfe-dev',
+    storageBucket: 'ezz-nfe-dev.firebasestorage.app',
+  );
+}
