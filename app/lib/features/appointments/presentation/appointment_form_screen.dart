@@ -158,6 +158,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
         children: [
           clientsAsync.when(
             loading: () => const LoadingView(),

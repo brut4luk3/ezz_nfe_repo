@@ -17,6 +17,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _confirmFocus = FocusNode();
   String? _localError;
 
   @override
@@ -24,6 +27,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _confirmFocus.dispose();
     super.dispose();
   }
 
@@ -71,6 +77,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         AppTextField(
           label: 'Email',
           controller: _emailController,
+          focusNode: _emailFocus,
+          nextFocusNode: _passwordFocus,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
         ),
@@ -78,6 +86,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         AppTextField(
           label: 'Senha',
           controller: _passwordController,
+          focusNode: _passwordFocus,
+          nextFocusNode: _confirmFocus,
           obscureText: true,
           textInputAction: TextInputAction.next,
         ),
@@ -85,6 +95,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         AppTextField(
           label: 'Confirmar senha',
           controller: _confirmController,
+          focusNode: _confirmFocus,
           obscureText: true,
           textInputAction: TextInputAction.send,
           onSubmitted: (_) => _submit(),

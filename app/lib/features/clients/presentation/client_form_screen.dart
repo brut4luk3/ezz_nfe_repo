@@ -21,6 +21,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   final _phoneController = TextEditingController();
   final _cpfController = TextEditingController();
   final _notesController = TextEditingController();
+  final _nameFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _cpfFocus = FocusNode();
+  final _notesFocus = FocusNode();
   String? _localError;
 
   @override
@@ -29,6 +33,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     _phoneController.dispose();
     _cpfController.dispose();
     _notesController.dispose();
+    _nameFocus.dispose();
+    _phoneFocus.dispose();
+    _cpfFocus.dispose();
+    _notesFocus.dispose();
     super.dispose();
   }
 
@@ -106,28 +114,36 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
         children: [
           AppTextField(
             label: 'Nome',
             controller: _nameController,
+            focusNode: _nameFocus,
+            nextFocusNode: _phoneFocus,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'Telefone',
             controller: _phoneController,
+            focusNode: _phoneFocus,
+            nextFocusNode: _cpfFocus,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'CPF',
             controller: _cpfController,
+            focusNode: _cpfFocus,
+            nextFocusNode: _notesFocus,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'Observacoes',
             controller: _notesController,
+            focusNode: _notesFocus,
             textInputAction: TextInputAction.send,
             onSubmitted: (_) => _submit(),
           ),

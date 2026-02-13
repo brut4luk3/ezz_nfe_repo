@@ -21,6 +21,10 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
   final _priceController = TextEditingController();
   final _durationController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _nameFocus = FocusNode();
+  final _priceFocus = FocusNode();
+  final _durationFocus = FocusNode();
+  final _descriptionFocus = FocusNode();
   String? _localError;
 
   @override
@@ -29,6 +33,10 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     _priceController.dispose();
     _durationController.dispose();
     _descriptionController.dispose();
+    _nameFocus.dispose();
+    _priceFocus.dispose();
+    _durationFocus.dispose();
+    _descriptionFocus.dispose();
     super.dispose();
   }
 
@@ -115,28 +123,36 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
         children: [
           AppTextField(
             label: 'Nome',
             controller: _nameController,
+            focusNode: _nameFocus,
+            nextFocusNode: _priceFocus,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'Preco (ex: 49.90)',
             controller: _priceController,
+            focusNode: _priceFocus,
+            nextFocusNode: _durationFocus,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'Duracao (min)',
             controller: _durationController,
+            focusNode: _durationFocus,
+            nextFocusNode: _descriptionFocus,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
           AppTextField(
             label: 'Descricao',
             controller: _descriptionController,
+            focusNode: _descriptionFocus,
             textInputAction: TextInputAction.send,
             onSubmitted: (_) => _submit(),
           ),

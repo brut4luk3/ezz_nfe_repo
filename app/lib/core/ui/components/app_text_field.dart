@@ -11,6 +11,9 @@ class AppTextField extends StatefulWidget {
   final bool obscureText;
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
+  /// When [textInputAction] is [TextInputAction.next], requesting focus on this
+  /// node keeps keyboard visible on Android (avoids HIDE_SOFT_INPUT race).
+  final FocusNode? nextFocusNode;
   final void Function(String)? onSubmitted;
   final void Function(String)? onChanged;
   final TextInputType? keyboardType;
@@ -24,6 +27,7 @@ class AppTextField extends StatefulWidget {
     this.obscureText = false,
     this.textInputAction,
     this.focusNode,
+    this.nextFocusNode,
     this.onSubmitted,
     this.onChanged,
     this.keyboardType,
@@ -71,7 +75,21 @@ class _AppTextFieldState extends State<AppTextField> {
 
     void handleSubmitted(String value) {
       if (effectiveAction == TextInputAction.next) {
-        FocusScope.of(context).nextFocus();
+        if (widget.nextFocusNode != null) {
+          // Defer to let Android process unfocus before we request focus;
+          // avoids HIDE_SOFT_INPUT closing keyboard before next field opens it.
+          final next = widget.nextFocusNode!;
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (context.mounted) next.requestFocus();
+          });
+        } else {
+          final current = FocusManager.instance.primaryFocus;
+          if (current != null) {
+            current.nextFocus();
+          } else {
+            FocusScope.of(context).nextFocus();
+          }
+        }
       }
       widget.onSubmitted?.call(value);
     }

@@ -16,12 +16,16 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
   String? _localError;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -58,6 +62,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         AppTextField(
           label: 'Email',
           controller: _emailController,
+          focusNode: _emailFocus,
+          nextFocusNode: _passwordFocus,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
         ),
@@ -65,6 +71,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         AppTextField(
           label: 'Senha',
           controller: _passwordController,
+          focusNode: _passwordFocus,
           obscureText: true,
           textInputAction: TextInputAction.send,
           onSubmitted: (_) => _submit(),
