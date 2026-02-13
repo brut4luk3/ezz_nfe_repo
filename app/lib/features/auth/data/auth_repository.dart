@@ -8,6 +8,11 @@ class AuthFailure implements Exception {
 abstract class AuthRepository {
   Stream<User?> authStateChanges();
   Future<void> signInWithEmail(String email, String password);
-  Future<void> registerWithEmail(String email, String password);
+  Future<void> registerWithEmail(
+    String email,
+    String password, {
+    String? fullName,
+    String? phone,
+  });
   Future<void> signOut();
 }

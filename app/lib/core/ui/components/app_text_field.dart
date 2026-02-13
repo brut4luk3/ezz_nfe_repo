@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Text field compartilhado com suporte a:
 /// - [prefixIcon] e [suffixIcon] (ex: lupa para busca, eye para senha)
@@ -17,6 +18,7 @@ class AppTextField extends StatefulWidget {
   final void Function(String)? onSubmitted;
   final void Function(String)? onChanged;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
 
@@ -31,6 +33,7 @@ class AppTextField extends StatefulWidget {
     this.onSubmitted,
     this.onChanged,
     this.keyboardType,
+    this.inputFormatters,
     this.prefixIcon,
     this.suffixIcon,
   });
@@ -100,6 +103,7 @@ class _AppTextFieldState extends State<AppTextField> {
       obscureText: _obscureText,
       textInputAction: effectiveAction,
       keyboardType: widget.keyboardType,
+      inputFormatters: widget.inputFormatters,
       onSubmitted: handleSubmitted,
       onChanged: widget.onChanged,
       decoration: InputDecoration(

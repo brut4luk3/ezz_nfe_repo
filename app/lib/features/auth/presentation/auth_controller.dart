@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -101,10 +101,20 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> register(String email, String password) async {
+  Future<void> register(
+    String email,
+    String password, {
+    String? fullName,
+    String? phone,
+  }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      await _authRepository.registerWithEmail(email, password);
+      await _authRepository.registerWithEmail(
+        email,
+        password,
+        fullName: fullName,
+        phone: phone,
+      );
       if (!mounted) return;
       state = state.copyWith(isLoading: false, errorMessage: null);
     } on AuthFailure catch (e) {

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/di/providers.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/primary_button.dart';
+import '../../../core/utils/brazilian_phone_formatter.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -14,9 +15,13 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  final _fullNameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  final _fullNameFocus = FocusNode();
+  final _phoneFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _confirmFocus = FocusNode();
@@ -24,9 +29,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void dispose() {
+    _fullNameController.dispose();
+    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
+    _fullNameFocus.dispose();
+    _phoneFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
     _confirmFocus.dispose();
@@ -35,12 +44,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _submit() {
     setState(() => _localError = null);
+    final fullName = _fullNameController.text.trim();
+    final phone = _phoneController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirm = _confirmController.text;
 
-    if (email.isEmpty || password.isEmpty || confirm.isEmpty) {
-      setState(() => _localError = 'Preencha todos os campos.');
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
+      setState(() => _localError = 'Preencha todos os campos obrigatorios.');
+      return;
+    }
+    final phoneDigits = phone.replaceAll(RegExp(r'\D'), '');
+    if (phoneDigits.length < 10) {
+      setState(() => _localError = 'Telefone invalido. Use o formato (XX) XXXXX-XXXX.');
       return;
     }
     if (password.length < 6) {
@@ -52,7 +68,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    ref.read(authControllerProvider.notifier).register(email, password);
+    ref.read(authControllerProvider.notifier).register(
+          email,
+          password,
+          fullName: fullName,
+          phone: phone,
+        );
   }
 
   @override
@@ -74,6 +95,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
+        AppTextField(
+          label: 'Nome completo',
+          controller: _fullNameController,
+          focusNode: _fullNameFocus,
+          nextFocusNode: _phoneFocus,
+          textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 12),
+        AppTextField(
+          label: 'Telefone (ex: (47) 99999-9999)',
+          controller: _phoneController,
+          focusNode: _phoneFocus,
+          nextFocusNode: _emailFocus,
+          keyboardType: TextInputType.phone,
+          inputFormatters: [BrazilianPhoneInputFormatter()],
+          textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 12),
         AppTextField(
           label: 'Email',
           controller: _emailController,

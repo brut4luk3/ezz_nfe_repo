@@ -38,7 +38,12 @@ class FirebaseEmailAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> registerWithEmail(String email, String password) async {
+  Future<void> registerWithEmail(
+    String email,
+    String password, {
+    String? fullName,
+    String? phone,
+  }) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -46,7 +51,12 @@ class FirebaseEmailAuthRepository implements AuthRepository {
       );
       final user = userCredential.user;
       if (user != null) {
-        await _upsertUserDocument(user, isNewUser: true);
+        await _upsertUserDocument(
+          user,
+          isNewUser: true,
+          fullName: fullName,
+          phone: phone,
+        );
       }
     } on FirebaseAuthException catch (e) {
       throw AuthFailure(_mapFirebaseAuthError(e));
@@ -60,11 +70,18 @@ class FirebaseEmailAuthRepository implements AuthRepository {
     await _auth.signOut();
   }
 
-  Future<void> _upsertUserDocument(User user, {bool isNewUser = false}) async {
+  Future<void> _upsertUserDocument(
+    User user, {
+    bool isNewUser = false,
+    String? fullName,
+    String? phone,
+  }) async {
     final docRef = _firestore.collection('users').doc(user.uid);
     final snapshot = await docRef.get();
 
-    final displayName = user.displayName ?? _defaultDisplayName(user.email);
+    final displayName = fullName?.trim().isNotEmpty == true
+        ? fullName!.trim()
+        : (user.displayName ?? _defaultDisplayName(user.email));
 
     final data = {
       'uid': user.uid,
@@ -72,6 +89,8 @@ class FirebaseEmailAuthRepository implements AuthRepository {
       'displayName': displayName,
       'lastLoginAt': FieldValue.serverTimestamp(),
       'appFlavor': _appFlavor,
+      if (fullName != null && fullName.trim().isNotEmpty) 'fullName': fullName.trim(),
+      if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
     };
 
     if (!snapshot.exists || isNewUser) {
