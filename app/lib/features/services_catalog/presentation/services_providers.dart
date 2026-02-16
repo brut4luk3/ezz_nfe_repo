@@ -22,16 +22,18 @@ class ServicesController extends StateNotifier<ServicesActionState> {
 
   ServicesController(this._repo) : super(const ServicesActionState());
 
-  Future<void> create(ServiceItem item) async {
-    if (_repo == null) return;
+  Future<String?> create(ServiceItem item) async {
+    if (_repo == null) return null;
     state = const ServicesActionState(isLoading: true);
     try {
-      await _repo.create(item);
+      final id = await _repo.create(item);
       state = const ServicesActionState();
+      return id;
     } catch (_) {
       state = const ServicesActionState(
         errorMessage: 'Nao foi possivel salvar o servico.',
       );
+      return null;
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
+import '../../../core/ui/components/select_add_client_form.dart';
 import '../../../core/ui/components/select_dialog.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../../../core/utils/brazilian_cpf_formatter.dart';
@@ -268,6 +269,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                         setState(() => _indicadorClientId = v.isNotEmpty ? v.first : null),
                     searchHint: 'Buscar cliente',
                     isOptional: true,
+                    buildAddForm: (context, ref, registerSubmit) =>
+                        SelectAddClientForm(registerSubmit: registerSubmit),
                   ),
           ],
           const SizedBox(height: 12),

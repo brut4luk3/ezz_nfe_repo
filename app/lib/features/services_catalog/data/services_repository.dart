@@ -29,13 +29,14 @@ class ServicesRepository {
     return ServiceItem.fromDoc(doc);
   }
 
-  Future<void> create(ServiceItem item) async {
+  Future<String> create(ServiceItem item) async {
     final data = item.toMap();
-    await _col.add({
+    final docRef = await _col.add({
       ...data,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    return docRef.id;
   }
 
   Future<void> update(String id, ServiceItem item) async {

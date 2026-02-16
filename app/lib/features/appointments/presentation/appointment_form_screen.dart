@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
+import '../../../core/ui/components/select_add_client_form.dart';
+import '../../../core/ui/components/select_add_service_form.dart';
 import '../../../core/ui/components/select_dialog.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../../../core/utils/formatters.dart';
@@ -195,6 +197,8 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                     setState(() => _clientId = v.isNotEmpty ? v.first : null),
                 searchHint: 'Buscar cliente',
                 isRequired: true,
+                buildAddForm: (context, ref, registerSubmit) =>
+                    SelectAddClientForm(registerSubmit: registerSubmit),
               );
             },
           ),
@@ -227,6 +231,8 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                     }),
                     searchHint: 'Buscar servico',
                     isRequired: true,
+                    buildAddForm: (context, ref, registerSubmit) =>
+                        SelectAddServiceForm(registerSubmit: registerSubmit),
                   ),
                   const SizedBox(height: 8),
                   Text('Total: ${formatCurrency(total)}'),

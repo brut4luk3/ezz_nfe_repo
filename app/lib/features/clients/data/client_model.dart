@@ -11,6 +11,7 @@ class Client {
   final bool indicacao;
   final String? indicadorClientId;
   final bool inadimplente;
+  final bool addedViaSelectDialog;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -25,6 +26,7 @@ class Client {
     this.indicacao = false,
     this.indicadorClientId,
     this.inadimplente = false,
+    this.addedViaSelectDialog = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -48,6 +50,7 @@ class Client {
       indicacao: data['indicacao'] == true,
       indicadorClientId: data['indicadorClientId'] as String?,
       inadimplente: data['inadimplente'] == true,
+      addedViaSelectDialog: data['addedViaSelectDialog'] == true,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -64,6 +67,7 @@ class Client {
       'indicacao': indicacao,
       'indicadorClientId': indicadorClientId,
       'inadimplente': inadimplente,
+      'addedViaSelectDialog': addedViaSelectDialog,
     };
   }
 }

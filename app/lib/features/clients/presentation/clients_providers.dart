@@ -22,16 +22,18 @@ class ClientsController extends StateNotifier<ClientsActionState> {
 
   ClientsController(this._repo) : super(const ClientsActionState());
 
-  Future<void> create(Client client) async {
-    if (_repo == null) return;
+  Future<String?> create(Client client) async {
+    if (_repo == null) return null;
     state = const ClientsActionState(isLoading: true);
     try {
-      await _repo.create(client);
+      final id = await _repo.create(client);
       state = const ClientsActionState();
+      return id;
     } catch (_) {
       state = const ClientsActionState(
         errorMessage: 'Nao foi possivel salvar o cliente.',
       );
+      return null;
     }
   }
 

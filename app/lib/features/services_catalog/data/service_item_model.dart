@@ -6,6 +6,7 @@ class ServiceItem {
   final int priceCents;
   final int? durationMinutes;
   final String? description;
+  final bool addedViaSelectDialog;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -15,6 +16,7 @@ class ServiceItem {
     required this.priceCents,
     this.durationMinutes,
     this.description,
+    this.addedViaSelectDialog = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -27,6 +29,7 @@ class ServiceItem {
       priceCents: (data['priceCents'] ?? 0) as int,
       durationMinutes: data['durationMinutes'] as int?,
       description: data['description'] as String?,
+      addedViaSelectDialog: data['addedViaSelectDialog'] == true,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -38,6 +41,7 @@ class ServiceItem {
       'priceCents': priceCents,
       'durationMinutes': durationMinutes,
       'description': description,
+      'addedViaSelectDialog': addedViaSelectDialog,
     };
   }
 }

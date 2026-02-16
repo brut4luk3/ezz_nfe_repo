@@ -29,13 +29,14 @@ class ClientsRepository {
     return Client.fromDoc(doc);
   }
 
-  Future<void> create(Client client) async {
+  Future<String> create(Client client) async {
     final data = client.toMap();
-    await _col.add({
+    final docRef = await _col.add({
       ...data,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    return docRef.id;
   }
 
   Future<void> update(String id, Client client) async {
