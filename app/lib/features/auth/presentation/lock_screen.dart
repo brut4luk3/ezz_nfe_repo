@@ -12,40 +12,67 @@ class LockScreen extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Desbloquear',
-          style: Theme.of(context).textTheme.headlineMedium,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-        const Text(
-          'Use a biometria para continuar.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
-        if (authState.errorMessage != null) ...[
-          Text(
-            authState.errorMessage!,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Desbloquear',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Use a biometria para continuar.',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-        ],
-        PrimaryButton(
-          label: 'Desbloquear com biometria',
-          onPressed: () =>
-              ref.read(authControllerProvider.notifier).unlockWithBiometrics(),
-          isLoading: authState.isLoading,
         ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed: authState.isLoading
-              ? null
-              : () => ref.read(authControllerProvider.notifier).logout(),
-          child: const Text('Sair'),
+        SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (authState.errorMessage != null) ...[
+                Text(
+                  authState.errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                const SizedBox(height: 12),
+              ],
+              PrimaryButton(
+                label: 'Desbloquear com biometria',
+                onPressed: () =>
+                    ref.read(authControllerProvider.notifier).unlockWithBiometrics(),
+                isLoading: authState.isLoading,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: authState.isLoading
+                        ? null
+                        : () => ref.read(authControllerProvider.notifier).logout(),
+                    child: Text(
+                      'Sair',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );

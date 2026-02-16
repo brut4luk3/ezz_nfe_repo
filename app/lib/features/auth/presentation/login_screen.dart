@@ -45,70 +45,124 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authControllerProvider);
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Login',
-          style: Theme.of(context).textTheme.headlineMedium,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-        const Text(
-          'Entre com seu email e senha.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
-        AppTextField(
-          label: 'Email',
-          isRequired: true,
-          controller: _emailController,
-          focusNode: _emailFocus,
-          nextFocusNode: _passwordFocus,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          onChanged: (_) => setState(() {}),
-        ),
-        const SizedBox(height: 12),
-        AppTextField(
-          label: 'Senha',
-          isRequired: true,
-          controller: _passwordController,
-          focusNode: _passwordFocus,
-          obscureText: true,
-          textInputAction: TextInputAction.send,
-          onSubmitted: (_) => _submit(),
-          onChanged: (_) => setState(() {}),
-        ),
-        const SizedBox(height: 16),
-        if (_localError != null) ...[
-          Text(
-            _localError!,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Login',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Entre com seu email e senha.',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-        ],
-        if (authState.errorMessage != null) ...[
-          Text(
-            authState.errorMessage!,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-          const SizedBox(height: 8),
-        ],
-        PrimaryButton(
-          label: 'Entrar',
-          onPressed: _submit,
-          isLoading: authState.isLoading,
-          disabled: _emailController.text.trim().isEmpty ||
-              _passwordController.text.isEmpty,
         ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed:
-              authState.isLoading ? null : () => context.go('/register'),
-          child: const Text('Criar conta'),
+        SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppTextField(
+                label: 'Email',
+                isRequired: true,
+                controller: _emailController,
+                focusNode: _emailFocus,
+                nextFocusNode: _passwordFocus,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      // TODO: Implementar fluxo de recuperacao de senha
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'Esqueceu sua senha?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  AppTextField(
+                    label: 'Senha',
+                    isRequired: true,
+                    controller: _passwordController,
+                    focusNode: _passwordFocus,
+                    obscureText: true,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _submit(),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_localError != null) ...[
+                Text(
+                  _localError!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (authState.errorMessage != null) ...[
+                Text(
+                  authState.errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                const SizedBox(height: 8),
+              ],
+              PrimaryButton(
+                label: 'Entrar',
+                onPressed: _submit,
+                isLoading: authState.isLoading,
+                disabled: _emailController.text.trim().isEmpty ||
+                    _passwordController.text.isEmpty,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Nao tem uma conta? ',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  GestureDetector(
+                    onTap: authState.isLoading
+                        ? null
+                        : () => context.go('/register'),
+                    child: Text(
+                      'Crie sua conta',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
