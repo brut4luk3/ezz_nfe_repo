@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/di/providers.dart';
 import '../../../core/ui/components/app_text_field.dart';
+import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../../../core/utils/brazilian_phone_formatter.dart';
@@ -36,6 +37,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     _lastNameFocus.dispose();
     _phoneFocus.dispose();
     super.dispose();
+  }
+
+  void _clear() {
+    setState(() {
+      _firstNameController.clear();
+      _lastNameController.clear();
+      _phoneController.clear();
+      _localError = null;
+    });
   }
 
   bool _isPhoneValid() {
@@ -101,11 +111,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               _emailController.text = profile.email;
             });
           }
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                 if (_localError != null) ...[
                   Text(
                     _localError!,
@@ -150,14 +163,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   readOnly: true,
                   keyboardType: TextInputType.emailAddress,
                 ),
-                const SizedBox(height: 24),
-                PrimaryButton(
-                  label: 'Salvar',
-                  onPressed: (authState.isLoading || !_isFormValid()) ? null : _submit,
-                  isLoading: authState.isLoading,
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PrimaryButton(
+                      icon: Icons.save,
+                      label: 'Salvar',
+                      onPressed: (authState.isLoading || !_isFormValid()) ? null : _submit,
+                      isLoading: authState.isLoading,
+                    ),
+                    const SizedBox(height: 8),
+                    FormClearLink(onTap: _clear),
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/ui/components/app_text_field.dart';
+import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../../../core/utils/brazilian_cpf_formatter.dart';
@@ -33,6 +34,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   final _notesFocus = FocusNode();
   String? _localError;
   bool _indicacao = false;
+  bool _userHasCleared = false;
   String? _indicadorClientId;
   bool _inadimplente = false;
 
@@ -51,6 +53,22 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     _origemFocus.dispose();
     _notesFocus.dispose();
     super.dispose();
+  }
+
+  void _clear() {
+    setState(() {
+      _userHasCleared = true;
+      _firstNameController.clear();
+      _lastNameController.clear();
+      _phoneController.clear();
+      _cpfController.clear();
+      _origemController.clear();
+      _notesController.clear();
+      _indicacao = false;
+      _indicadorClientId = null;
+      _inadimplente = false;
+      _localError = null;
+    });
   }
 
   void _setValues(Client client) {
@@ -132,7 +150,9 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           loading: () => const LoadingView(),
           error: (err, _) => Center(child: Text(err.toString())),
           data: (client) {
-            if (client != null && _firstNameController.text.isEmpty) {
+            if (client != null &&
+                _firstNameController.text.isEmpty &&
+                !_userHasCleared) {
               _setValues(client);
             }
             return _form(actionState);
@@ -154,12 +174,15 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             .toList() ??
         [];
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: ListView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-        children: [
-          AppTextField(
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ListView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+              children: [
+                AppTextField(
             label: 'Nome',
             isRequired: true,
             controller: _firstNameController,
@@ -292,14 +315,28 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             ),
             const SizedBox(height: 8),
           ],
-          PrimaryButton(
-            label: 'Salvar',
-            onPressed: _submit,
-            isLoading: actionState.isLoading,
-            disabled: !_isFormValid(),
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PrimaryButton(
+                icon: Icons.save,
+                label: 'Salvar',
+                onPressed: _submit,
+                isLoading: actionState.isLoading,
+                disabled: !_isFormValid(),
+              ),
+              const SizedBox(height: 8),
+              FormClearLink(onTap: _clear),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/ui/components/app_text_field.dart';
+import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../../../core/utils/formatters.dart';
@@ -30,11 +31,23 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
   DateTime _scheduledAt = DateTime.now();
   final _notesController = TextEditingController();
   String? _localError;
+  bool _userHasCleared = false;
 
   @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
+  }
+
+  void _clear() {
+    setState(() {
+      _userHasCleared = true;
+      _clientId = null;
+      _serviceIds.clear();
+      _scheduledAt = DateTime.now();
+      _notesController.clear();
+      _localError = null;
+    });
   }
 
   void _setValues(Appointment appt) {
@@ -135,7 +148,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
           loading: () => const LoadingView(),
           error: (err, _) => Center(child: Text(err.toString())),
           data: (appt) {
-            if (appt != null && _clientId == null) {
+            if (appt != null && _clientId == null && !_userHasCleared) {
               _setValues(appt);
             }
             return _form(clientsAsync, servicesAsync, actionState);
@@ -155,11 +168,14 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
     AsyncValue<List<ServiceItem>> servicesAsync,
     AppointmentsActionState actionState,
   ) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: ListView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-        children: [
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ListView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+              children: [
           clientsAsync.when(
             loading: () => const LoadingView(),
             error: (err, _) => Text(err.toString()),
@@ -254,20 +270,34 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
             ),
             const SizedBox(height: 8),
           ],
-          PrimaryButton(
-            label: 'Salvar',
-            onPressed: (_clientId != null && _serviceIds.isNotEmpty)
-                ? () => servicesAsync.when(
-                      loading: () {},
-                      error: (_, _) {},
-                      data: (services) => _submit(services),
-                    )
-                : null,
-            isLoading: actionState.isLoading,
-            disabled: _clientId == null || _serviceIds.isEmpty,
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PrimaryButton(
+                icon: Icons.save,
+                label: 'Salvar',
+                onPressed: (_clientId != null && _serviceIds.isNotEmpty)
+                    ? () => servicesAsync.when(
+                          loading: () {},
+                          error: (_, _) {},
+                          data: (services) => _submit(services),
+                        )
+                    : null,
+                isLoading: actionState.isLoading,
+                disabled: _clientId == null || _serviceIds.isEmpty,
+              ),
+              const SizedBox(height: 8),
+              FormClearLink(onTap: _clear),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/ui/components/app_text_field.dart';
+import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../data/service_item_model.dart';
@@ -26,6 +27,7 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
   final _durationFocus = FocusNode();
   final _descriptionFocus = FocusNode();
   String? _localError;
+  bool _userHasCleared = false;
 
   @override
   void dispose() {
@@ -38,6 +40,17 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     _durationFocus.dispose();
     _descriptionFocus.dispose();
     super.dispose();
+  }
+
+  void _clear() {
+    setState(() {
+      _userHasCleared = true;
+      _nameController.clear();
+      _priceController.clear();
+      _durationController.clear();
+      _descriptionController.clear();
+      _localError = null;
+    });
   }
 
   void _setValues(ServiceItem item) {
@@ -110,7 +123,9 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
           loading: () => const LoadingView(),
           error: (err, _) => Center(child: Text(err.toString())),
           data: (item) {
-            if (item != null && _nameController.text.isEmpty) {
+            if (item != null &&
+                _nameController.text.isEmpty &&
+                !_userHasCleared) {
               _setValues(item);
             }
             return _form(actionState);
@@ -126,11 +141,14 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
   }
 
   Widget _form(ServicesActionState actionState) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: ListView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-        children: [
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ListView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+              children: [
           AppTextField(
             label: 'Nome',
             isRequired: true,
@@ -178,14 +196,28 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
                 style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 8),
           ],
-          PrimaryButton(
-            label: 'Salvar',
-            onPressed: _submit,
-            isLoading: actionState.isLoading,
-            disabled: !_isFormValid(),
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PrimaryButton(
+                icon: Icons.save,
+                label: 'Salvar',
+                onPressed: _submit,
+                isLoading: actionState.isLoading,
+                disabled: !_isFormValid(),
+              ),
+              const SizedBox(height: 8),
+              FormClearLink(onTap: _clear),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

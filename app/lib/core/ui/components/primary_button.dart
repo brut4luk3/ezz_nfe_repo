@@ -6,6 +6,7 @@ class PrimaryButton extends StatelessWidget {
   final bool isLoading;
   /// Quando true, o botao fica desabilitado (ex: formulario incompleto).
   final bool disabled;
+  final IconData? icon;
 
   const PrimaryButton({
     super.key,
@@ -13,6 +14,7 @@ class PrimaryButton extends StatelessWidget {
     this.onPressed,
     this.isLoading = false,
     this.disabled = false,
+    this.icon,
   });
 
   @override
@@ -30,7 +32,17 @@ class PrimaryButton extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
               )
-            : Text(label),
+            : icon != null
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(icon, size: 20),
+                      const SizedBox(width: 8),
+                      Text(label),
+                    ],
+                  )
+                : Text(label),
       ),
     );
   }
