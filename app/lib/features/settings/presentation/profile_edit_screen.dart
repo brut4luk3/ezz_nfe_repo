@@ -66,12 +66,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       return;
     }
     if (!_isPhoneValid()) {
-      setState(() =>
-          _localError = 'Telefone invalido. Use o formato (XX) XXXXX-XXXX.');
+      setState(
+        () => _localError = 'Telefone invalido. Use o formato (XX) XXXXX-XXXX.',
+      );
       return;
     }
 
-    await ref.read(authControllerProvider.notifier).updateProfile(
+    await ref
+        .read(authControllerProvider.notifier)
+        .updateProfile(
           firstName: firstName,
           lastName: _lastNameController.text.trim(),
           phone: phone,
@@ -82,9 +85,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     if (state.errorMessage == null) {
       ref.invalidate(currentUserProfileProvider);
       ref.invalidate(currentUserDisplayNameProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados atualizados.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Dados atualizados.')));
       context.pop();
     } else {
       setState(() => _localError = state.errorMessage);
@@ -100,7 +103,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       appBar: AppBar(title: const Text('Meus dados cadastrais')),
       body: profileAsync.when(
         loading: () => const LoadingView(),
-        error: (_, __) => const Center(child: Text('Erro ao carregar dados.')),
+        error: (_, _) => const Center(child: Text('Erro ao carregar dados.')),
         data: (profile) {
           if (!_initialized) {
             _initialized = true;
@@ -119,50 +122,52 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                if (_localError != null) ...[
-                  Text(
-                    _localError!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                AppTextField(
-                  label: 'Nome',
-                  isRequired: true,
-                  controller: _firstNameController,
-                  focusNode: _firstNameFocus,
-                  nextFocusNode: _lastNameFocus,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: 12),
-                AppTextField(
-                  label: 'Sobrenome',
-                  isOptional: true,
-                  controller: _lastNameController,
-                  focusNode: _lastNameFocus,
-                  nextFocusNode: _phoneFocus,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: 12),
-                AppTextField(
-                  label: 'Telefone',
-                  isRequired: true,
-                  controller: _phoneController,
-                  focusNode: _phoneFocus,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [BrazilianPhoneInputFormatter()],
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: 12),
-                AppTextField(
-                  label: 'Email',
-                  isRequired: true,
-                  controller: _emailController,
-                  readOnly: true,
-                  keyboardType: TextInputType.emailAddress,
-                ),
+                      if (_localError != null) ...[
+                        Text(
+                          _localError!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      AppTextField(
+                        label: 'Nome',
+                        isRequired: true,
+                        controller: _firstNameController,
+                        focusNode: _firstNameFocus,
+                        nextFocusNode: _lastNameFocus,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 12),
+                      AppTextField(
+                        label: 'Sobrenome',
+                        isOptional: true,
+                        controller: _lastNameController,
+                        focusNode: _lastNameFocus,
+                        nextFocusNode: _phoneFocus,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 12),
+                      AppTextField(
+                        label: 'Telefone',
+                        isRequired: true,
+                        controller: _phoneController,
+                        focusNode: _phoneFocus,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [BrazilianPhoneInputFormatter()],
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 12),
+                      AppTextField(
+                        label: 'Email',
+                        isRequired: true,
+                        controller: _emailController,
+                        readOnly: true,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
                     ],
                   ),
                 ),
@@ -175,7 +180,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     PrimaryButton(
                       icon: Icons.save,
                       label: 'Salvar',
-                      onPressed: (authState.isLoading || !_isFormValid()) ? null : _submit,
+                      onPressed: (authState.isLoading || !_isFormValid())
+                          ? null
+                          : _submit,
                       isLoading: authState.isLoading,
                     ),
                     const SizedBox(height: 8),

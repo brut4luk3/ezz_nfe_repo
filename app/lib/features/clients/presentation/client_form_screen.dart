@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
+import '../../../core/ui/components/select_dialog.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../../../core/utils/brazilian_cpf_formatter.dart';
 import '../../../core/utils/brazilian_phone_formatter.dart';
@@ -234,18 +235,13 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField<bool>(
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Indicação (opcional)'),
             value: _indicacao,
-            decoration: const InputDecoration(
-              labelText: 'Indicação (opcional)',
-              border: OutlineInputBorder(),
-            ),
-            items: const [
-              DropdownMenuItem(value: false, child: Text('Não')),
-              DropdownMenuItem(value: true, child: Text('Sim')),
-            ],
+            controlAffinity: ListTileControlAffinity.trailing,
             onChanged: (value) => setState(() {
-              _indicacao = value ?? false;
+              _indicacao = value;
               if (!_indicacao) _indicadorClientId = null;
             }),
           ),
@@ -259,37 +255,28 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   )
-                : DropdownButtonFormField<String>(
-                    value: _indicadorClientId,
-                    decoration: const InputDecoration(
-                      labelText: 'Cliente indicador (opcional)',
-                      border: OutlineInputBorder(),
-                    ),
+                : SelectFormField<String>(
+                    label: 'Cliente indicador',
                     items: otherClients
-                        .map<DropdownMenuItem<String>>(
-                          (c) => DropdownMenuItem<String>(
-                            value: c.id,
-                            child: Text(c.name),
-                          ),
-                        )
+                        .map((c) => SelectOption<String>(value: c.id, label: c.name))
                         .toList(),
-                    onChanged: (value) =>
-                        setState(() => _indicadorClientId = value),
+                    multiple: false,
+                    value: _indicadorClientId != null
+                        ? [_indicadorClientId!]
+                        : [],
+                    onChanged: (v) =>
+                        setState(() => _indicadorClientId = v.isNotEmpty ? v.first : null),
+                    searchHint: 'Buscar cliente',
+                    isOptional: true,
                   ),
           ],
           const SizedBox(height: 12),
-          DropdownButtonFormField<bool>(
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Inadimplente (opcional)'),
             value: _inadimplente,
-            decoration: const InputDecoration(
-              labelText: 'Inadimplente (opcional)',
-              border: OutlineInputBorder(),
-            ),
-            items: const [
-              DropdownMenuItem(value: false, child: Text('Não')),
-              DropdownMenuItem(value: true, child: Text('Sim')),
-            ],
-            onChanged: (value) =>
-                setState(() => _inadimplente = value ?? false),
+            controlAffinity: ListTileControlAffinity.trailing,
+            onChanged: (value) => setState(() => _inadimplente = value),
           ),
           const SizedBox(height: 12),
           AppTextField(

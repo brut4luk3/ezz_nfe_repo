@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
+import '../../../core/ui/components/select_dialog.dart';
 import '../../../core/ui/widgets/loading_view.dart';
 import '../../../core/utils/formatters.dart';
 import '../../clients/data/client_model.dart';
@@ -183,26 +184,17 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
               if (clients.isEmpty) {
                 return const Text('Cadastre um cliente primeiro.');
               }
-              return DropdownButtonFormField<String>(
-                value: _clientId ?? '',
-                decoration: const InputDecoration(
-                  labelText: 'Cliente *',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  const DropdownMenuItem(
-                    value: '',
-                    child: Text('Selecione um cliente'),
-                  ),
-                  ...clients.map<DropdownMenuItem<String>>(
-                    (c) => DropdownMenuItem<String>(
-                      value: c.id,
-                      child: Text(c.name),
-                    ),
-                  ),
-                ],
-                onChanged: (value) =>
-                    setState(() => _clientId = (value == null || value.isEmpty) ? null : value),
+              return SelectFormField<String>(
+                label: 'Cliente',
+                items: clients
+                    .map((c) => SelectOption<String>(value: c.id, label: c.name))
+                    .toList(),
+                multiple: false,
+                value: _clientId != null ? [_clientId!] : [],
+                onChanged: (v) =>
+                    setState(() => _clientId = v.isNotEmpty ? v.first : null),
+                searchHint: 'Buscar cliente',
+                isRequired: true,
               );
             },
           ),
@@ -218,25 +210,24 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Servicos *'),
-                  const SizedBox(height: 8),
-                  ...services.map((s) {
-                    final checked = _serviceIds.contains(s.id);
-                    return CheckboxListTile(
-                      value: checked,
-                      title: Text(s.name),
-                      subtitle: Text(formatCurrency(s.priceCents)),
-                      onChanged: (value) {
-                        setState(() {
-                          if (value == true) {
-                            _serviceIds.add(s.id);
-                          } else {
-                            _serviceIds.remove(s.id);
-                          }
-                        });
-                      },
-                    );
-                  }),
+                  SelectFormField<String>(
+                    label: 'Servicos',
+                    items: services
+                        .map((s) => SelectOption<String>(
+                              value: s.id,
+                              label: s.name,
+                              subtitle: formatCurrency(s.priceCents),
+                            ))
+                        .toList(),
+                    multiple: true,
+                    value: _serviceIds.toList(),
+                    onChanged: (v) => setState(() {
+                      _serviceIds.clear();
+                      _serviceIds.addAll(v);
+                    }),
+                    searchHint: 'Buscar servico',
+                    isRequired: true,
+                  ),
                   const SizedBox(height: 8),
                   Text('Total: ${formatCurrency(total)}'),
                 ],
