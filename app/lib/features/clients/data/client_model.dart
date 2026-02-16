@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Client {
   final String id;
-  final String name;
+  final String firstName;
+  final String lastName;
   final String phone;
   final String? cpf;
   final String? notes;
@@ -15,7 +16,8 @@ class Client {
 
   const Client({
     required this.id,
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.phone,
     this.cpf,
     this.notes,
@@ -27,11 +29,18 @@ class Client {
     this.updatedAt,
   });
 
+  /// Nome completo (firstName + lastName) para exibicao e compatibilidade.
+  String get name => '$firstName $lastName'.trim();
+
   factory Client.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
+    final firstName = data['firstName'] as String?;
+    final lastName = data['lastName'] as String?;
+    final legacyName = data['name'] as String? ?? '';
     return Client(
       id: doc.id,
-      name: (data['name'] ?? '') as String,
+      firstName: firstName ?? legacyName,
+      lastName: lastName ?? '',
       phone: (data['phone'] ?? '') as String,
       cpf: data['cpf'] as String?,
       notes: data['notes'] as String?,
@@ -46,7 +55,8 @@ class Client {
 
   Map<String, dynamic> toMap() {
     return {
-      'name': name,
+      'firstName': firstName,
+      'lastName': lastName,
       'phone': phone,
       'cpf': cpf,
       'notes': notes,

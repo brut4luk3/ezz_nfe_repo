@@ -19,12 +19,14 @@ class ClientFormScreen extends ConsumerStatefulWidget {
 }
 
 class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _cpfController = TextEditingController();
   final _origemController = TextEditingController();
   final _notesController = TextEditingController();
-  final _nameFocus = FocusNode();
+  final _firstNameFocus = FocusNode();
+  final _lastNameFocus = FocusNode();
   final _phoneFocus = FocusNode();
   final _cpfFocus = FocusNode();
   final _origemFocus = FocusNode();
@@ -36,12 +38,14 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _phoneController.dispose();
     _cpfController.dispose();
     _origemController.dispose();
     _notesController.dispose();
-    _nameFocus.dispose();
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
     _phoneFocus.dispose();
     _cpfFocus.dispose();
     _origemFocus.dispose();
@@ -50,7 +54,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   }
 
   void _setValues(Client client) {
-    _nameController.text = client.name;
+    _firstNameController.text = client.firstName;
+    _lastNameController.text = client.lastName;
     _phoneController.text = client.phone;
     _cpfController.text = client.cpf ?? '';
     _origemController.text = client.origem ?? '';
@@ -66,14 +71,14 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   }
 
   bool _isFormValid() {
-    return _nameController.text.trim().isNotEmpty && _isPhoneValid();
+    return _firstNameController.text.trim().isNotEmpty && _isPhoneValid();
   }
 
   Future<void> _submit() async {
     setState(() => _localError = null);
-    final name = _nameController.text.trim();
+    final firstName = _firstNameController.text.trim();
     final phone = _phoneController.text.trim();
-    if (name.isEmpty) {
+    if (firstName.isEmpty) {
       setState(() => _localError = 'Nome e obrigatorio.');
       return;
     }
@@ -84,7 +89,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     }
     final client = Client(
       id: widget.clientId ?? '',
-      name: name,
+      firstName: firstName,
+      lastName: _lastNameController.text.trim(),
       phone: phone,
       cpf: _cpfController.text.trim().isEmpty ? null : _cpfController.text.trim(),
       notes: _notesController.text.trim().isEmpty
@@ -126,7 +132,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           loading: () => const LoadingView(),
           error: (err, _) => Center(child: Text(err.toString())),
           data: (client) {
-            if (client != null && _nameController.text.isEmpty) {
+            if (client != null && _firstNameController.text.isEmpty) {
               _setValues(client);
             }
             return _form(actionState);
@@ -156,8 +162,18 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           AppTextField(
             label: 'Nome',
             isRequired: true,
-            controller: _nameController,
-            focusNode: _nameFocus,
+            controller: _firstNameController,
+            focusNode: _firstNameFocus,
+            nextFocusNode: _lastNameFocus,
+            textInputAction: TextInputAction.next,
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 12),
+          AppTextField(
+            label: 'Sobrenome',
+            isOptional: true,
+            controller: _lastNameController,
+            focusNode: _lastNameFocus,
             nextFocusNode: _phoneFocus,
             textInputAction: TextInputAction.next,
             onChanged: (_) => setState(() {}),

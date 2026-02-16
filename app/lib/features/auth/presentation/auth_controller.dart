@@ -104,7 +104,8 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> register(
     String email,
     String password, {
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? phone,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -112,7 +113,8 @@ class AuthController extends StateNotifier<AuthState> {
       await _authRepository.registerWithEmail(
         email,
         password,
-        fullName: fullName,
+        firstName: firstName,
+        lastName: lastName,
         phone: phone,
       );
       if (!mounted) return;

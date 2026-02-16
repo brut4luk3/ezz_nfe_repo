@@ -41,7 +41,8 @@ class FirebaseEmailAuthRepository implements AuthRepository {
   Future<void> registerWithEmail(
     String email,
     String password, {
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? phone,
   }) async {
     try {
@@ -54,7 +55,8 @@ class FirebaseEmailAuthRepository implements AuthRepository {
         await _upsertUserDocument(
           user,
           isNewUser: true,
-          fullName: fullName,
+          firstName: firstName,
+          lastName: lastName,
           phone: phone,
         );
       }
@@ -73,15 +75,14 @@ class FirebaseEmailAuthRepository implements AuthRepository {
   Future<void> _upsertUserDocument(
     User user, {
     bool isNewUser = false,
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? phone,
   }) async {
     final docRef = _firestore.collection('users').doc(user.uid);
     final snapshot = await docRef.get();
 
-    final displayName = fullName?.trim().isNotEmpty == true
-        ? fullName!.trim()
-        : (user.displayName ?? _defaultDisplayName(user.email));
+    final displayName = _buildDisplayName(firstName, user.displayName, user.email);
 
     final data = {
       'uid': user.uid,
@@ -89,7 +90,8 @@ class FirebaseEmailAuthRepository implements AuthRepository {
       'displayName': displayName,
       'lastLoginAt': FieldValue.serverTimestamp(),
       'appFlavor': _appFlavor,
-      if (fullName != null && fullName.trim().isNotEmpty) 'fullName': fullName.trim(),
+      if (firstName != null && firstName.trim().isNotEmpty) 'firstName': firstName.trim(),
+      if (lastName != null && lastName.trim().isNotEmpty) 'lastName': lastName.trim(),
       if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
     };
 
@@ -101,6 +103,12 @@ class FirebaseEmailAuthRepository implements AuthRepository {
     } else {
       await docRef.update(data);
     }
+  }
+
+  String _buildDisplayName(String? firstName, String? userDisplayName, String? email) {
+    final first = firstName?.trim() ?? '';
+    if (first.isNotEmpty) return first;
+    return userDisplayName ?? _defaultDisplayName(email);
   }
 
   String _defaultDisplayName(String? email) {
