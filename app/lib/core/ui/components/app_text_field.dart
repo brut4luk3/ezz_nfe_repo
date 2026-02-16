@@ -25,6 +25,7 @@ class AppTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final bool readOnly;
 
   const AppTextField({
     super.key,
@@ -42,6 +43,7 @@ class AppTextField extends StatefulWidget {
     this.inputFormatters,
     this.prefixIcon,
     this.suffixIcon,
+    this.readOnly = false,
   });
 
   @override
@@ -112,6 +114,7 @@ class _AppTextFieldState extends State<AppTextField> {
     return TextField(
       controller: widget.controller,
       focusNode: widget.focusNode,
+      readOnly: widget.readOnly,
       obscureText: _obscureText,
       textInputAction: effectiveAction,
       keyboardType: widget.keyboardType,

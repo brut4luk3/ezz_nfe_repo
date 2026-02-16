@@ -16,4 +16,9 @@ abstract class AuthRepository {
     String? phone,
   });
   Future<void> signOut();
+  Future<void> updateUserProfile({
+    String? firstName,
+    String? lastName,
+    String? phone,
+  });
 }

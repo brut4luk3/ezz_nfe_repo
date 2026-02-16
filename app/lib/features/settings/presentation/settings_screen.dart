@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/di/providers.dart';
 import '../../../core/ui/components/app_card.dart';
@@ -13,75 +14,107 @@ class SettingsScreen extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final themeMode = ref.watch(themeControllerProvider);
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Column(
       children: [
-        Text(
-          'Settings',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 12),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                'Aparência',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Modo escuro'),
-                value: themeMode == ThemeMode.dark,
-                onChanged: (value) {
-                  ref.read(themeControllerProvider.notifier).setThemeMode(
-                        value ? ThemeMode.dark : ThemeMode.light,
-                      );
-                },
-              ),
-            ],
-          ),
-        ),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Biometria'),
-              const SizedBox(height: 8),
-              if (authState.errorMessage != null) ...[
-                Text(
-                  authState.errorMessage!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.person_outline),
+                      title: const Text('Meus dados cadastrais'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/settings/profile'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-              ],
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Desbloqueio por biometria'),
-                value: authState.biometricEnabled,
-                onChanged: authState.isLoading
-                    ? null
-                    : (value) => ref
-                        .read(authControllerProvider.notifier)
-                        .setBiometricEnabled(value),
               ),
-              const SizedBox(height: 4),
-              Text('Unlocked: ${authState.biometricUnlocked}'),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Aparência',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Modo escuro'),
+                      value: themeMode == ThemeMode.dark,
+                      onChanged: (value) {
+                        ref
+                            .read(themeControllerProvider.notifier)
+                            .setThemeMode(
+                              value ? ThemeMode.dark : ThemeMode.light,
+                            );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Biometria'),
+                    const SizedBox(height: 8),
+                    if (authState.errorMessage != null) ...[
+                      Text(
+                        authState.errorMessage!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Desbloqueio por biometria'),
+                      value: authState.biometricEnabled,
+                      onChanged: authState.isLoading
+                          ? null
+                          : (value) => ref
+                                .read(authControllerProvider.notifier)
+                                .setBiometricEnabled(value),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 24),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.tonalIcon(
-            onPressed: () => _onLogout(context, ref),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.errorContainer,
-              foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: InkWell(
+            onTap: () => _onLogout(context, ref),
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.logout,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Sair da conta',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            icon: const Icon(Icons.logout),
-            label: const Text('Sair da conta'),
           ),
         ),
       ],

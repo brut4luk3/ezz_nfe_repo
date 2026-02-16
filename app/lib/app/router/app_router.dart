@@ -14,6 +14,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/invoices/presentation/invoices_screen.dart';
 import '../../features/services_catalog/presentation/services_screen.dart';
 import '../../features/services_catalog/presentation/service_form_screen.dart';
+import '../../features/settings/presentation/profile_edit_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../di/providers.dart';
 import 'route_guards.dart';
@@ -94,6 +95,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: '/settings/profile',
+            builder: (context, state) => const ProfileEditScreen(),
           ),
         ],
       ),

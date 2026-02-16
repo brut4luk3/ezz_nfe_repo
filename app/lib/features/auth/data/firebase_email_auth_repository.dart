@@ -72,6 +72,22 @@ class FirebaseEmailAuthRepository implements AuthRepository {
     await _auth.signOut();
   }
 
+  @override
+  Future<void> updateUserProfile({
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) throw const AuthFailure('Usuario nao autenticado.');
+    await _upsertUserDocument(
+      user,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+    );
+  }
+
   Future<void> _upsertUserDocument(
     User user, {
     bool isNewUser = false,
@@ -81,8 +97,17 @@ class FirebaseEmailAuthRepository implements AuthRepository {
   }) async {
     final docRef = _firestore.collection('users').doc(user.uid);
     final snapshot = await docRef.get();
+    final existing = snapshot.data();
 
-    final displayName = _buildDisplayName(firstName, user.displayName, user.email);
+    final first = firstName ?? existing?['firstName'] as String? ?? '';
+    final last = lastName ?? existing?['lastName'] as String? ?? '';
+    final ph = phone ?? existing?['phone'] as String? ?? '';
+
+    final displayName = _buildDisplayName(
+      first.isNotEmpty ? first : null,
+      user.displayName,
+      user.email,
+    );
 
     final data = {
       'uid': user.uid,
@@ -90,9 +115,9 @@ class FirebaseEmailAuthRepository implements AuthRepository {
       'displayName': displayName,
       'lastLoginAt': FieldValue.serverTimestamp(),
       'appFlavor': _appFlavor,
-      if (firstName != null && firstName.trim().isNotEmpty) 'firstName': firstName.trim(),
-      if (lastName != null && lastName.trim().isNotEmpty) 'lastName': lastName.trim(),
-      if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
+      'firstName': first.trim(),
+      'lastName': last.trim(),
+      'phone': ph.trim(),
     };
 
     if (!snapshot.exists || isNewUser) {

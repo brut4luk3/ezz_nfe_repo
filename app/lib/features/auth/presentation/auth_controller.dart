@@ -135,6 +135,26 @@ class AuthController extends StateNotifier<AuthState> {
     );
   }
 
+  Future<void> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _authRepository.updateUserProfile(
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+      );
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, errorMessage: null);
+    } on AuthFailure catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, errorMessage: e.message);
+    }
+  }
+
   Future<bool> unlockWithBiometrics() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     final canCheck = await _biometricService.canCheckBiometrics();

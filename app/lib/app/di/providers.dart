@@ -60,6 +60,41 @@ final currentUidProvider = Provider<String?>((ref) {
   return ref.watch(authControllerProvider).user?.uid;
 });
 
+final currentUserDisplayNameProvider = FutureProvider<String>((ref) async {
+  final user = ref.watch(authControllerProvider).user;
+  if (user == null) return 'Usuário';
+  final snapshot = await ref
+      .watch(firestoreProvider)
+      .collection('users')
+      .doc(user.uid)
+      .get();
+  final displayName = snapshot.data()?['displayName'] as String?;
+  if (displayName != null && displayName.trim().isNotEmpty) {
+    return displayName.trim();
+  }
+  return user.displayName?.trim().isNotEmpty == true
+      ? user.displayName!
+      : (user.email?.split('@').first ?? 'Usuário');
+});
+
+final currentUserProfileProvider =
+    FutureProvider<({String firstName, String lastName, String phone, String email})>((ref) async {
+  final user = ref.watch(authControllerProvider).user;
+  if (user == null) throw StateError('Not authenticated');
+  final snapshot = await ref
+      .watch(firestoreProvider)
+      .collection('users')
+      .doc(user.uid)
+      .get();
+  final d = snapshot.data();
+  return (
+    firstName: d?['firstName'] as String? ?? '',
+    lastName: d?['lastName'] as String? ?? '',
+    phone: d?['phone'] as String? ?? '',
+    email: user.email ?? '',
+  );
+});
+
 final clientsRepositoryProvider = Provider<ClientsRepository?>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return null;
