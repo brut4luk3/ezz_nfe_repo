@@ -117,6 +117,7 @@ class _AppTextFieldState extends State<AppTextField> {
       readOnly: widget.readOnly,
       obscureText: _obscureText,
       textInputAction: effectiveAction,
+      textCapitalization: TextCapitalization.sentences,
       keyboardType: widget.keyboardType,
       inputFormatters: widget.inputFormatters,
       onSubmitted: handleSubmitted,

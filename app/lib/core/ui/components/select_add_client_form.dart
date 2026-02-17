@@ -7,7 +7,7 @@ import '../../utils/brazilian_phone_formatter.dart';
 import 'app_text_field.dart';
 
 /// Form compacto para adicionar cliente dentro do SelectDialog.
-/// Apenas campos obrigatórios: Nome, Telefone.
+/// Apenas campos obrigatórios: Nome, Telefone. Sobrenome opcional.
 class SelectAddClientForm extends ConsumerStatefulWidget {
   final void Function(Future<String?> Function() submit) registerSubmit;
 
@@ -21,9 +21,11 @@ class SelectAddClientForm extends ConsumerStatefulWidget {
 }
 
 class _SelectAddClientFormState extends ConsumerState<SelectAddClientForm> {
-  final _nomeController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _nomeFocus = FocusNode();
+  final _firstNameFocus = FocusNode();
+  final _lastNameFocus = FocusNode();
   final _phoneFocus = FocusNode();
   String? _error;
 
@@ -37,9 +39,11 @@ class _SelectAddClientFormState extends ConsumerState<SelectAddClientForm> {
 
   @override
   void dispose() {
-    _nomeController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _phoneController.dispose();
-    _nomeFocus.dispose();
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
     _phoneFocus.dispose();
     super.dispose();
   }
@@ -51,9 +55,10 @@ class _SelectAddClientFormState extends ConsumerState<SelectAddClientForm> {
 
   Future<String?> _submit() async {
     setState(() => _error = null);
-    final nome = _nomeController.text.trim();
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
     final phone = _phoneController.text.trim();
-    if (nome.isEmpty) {
+    if (firstName.isEmpty) {
       setState(() => _error = 'Nome e obrigatorio.');
       return null;
     }
@@ -62,11 +67,10 @@ class _SelectAddClientFormState extends ConsumerState<SelectAddClientForm> {
           _error = 'Telefone invalido. Use o formato (XX) XXXXX-XXXX.');
       return null;
     }
-    final firstName = nome;
     final client = Client(
       id: '',
       firstName: firstName,
-      lastName: '',
+      lastName: lastName,
       phone: phone,
       addedViaSelectDialog: true,
     );
@@ -91,8 +95,17 @@ class _SelectAddClientFormState extends ConsumerState<SelectAddClientForm> {
         AppTextField(
           label: 'Nome',
           isRequired: true,
-          controller: _nomeController,
-          focusNode: _nomeFocus,
+          controller: _firstNameController,
+          focusNode: _firstNameFocus,
+          nextFocusNode: _lastNameFocus,
+          textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 12),
+        AppTextField(
+          label: 'Sobrenome',
+          isOptional: true,
+          controller: _lastNameController,
+          focusNode: _lastNameFocus,
           nextFocusNode: _phoneFocus,
           textInputAction: TextInputAction.next,
         ),
