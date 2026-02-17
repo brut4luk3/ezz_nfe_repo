@@ -10,6 +10,7 @@ import '../../../core/ui/components/primary_button.dart';
 import '../../../core/ui/components/select_add_product_form.dart';
 import '../../../core/ui/components/select_dialog.dart';
 import '../../../core/utils/brazilian_currency_formatter.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../features/products/presentation/products_providers.dart';
 import '../data/service_item_model.dart';
 import 'services_providers.dart';
@@ -141,7 +142,7 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
   Future<void> _submit() async {
     setState(() => _localError = null);
     final name = _nameController.text.trim();
-    final price = _parsePrice(_priceController.text.trim());
+    var price = _parsePrice(_priceController.text.trim());
     if (name.isEmpty || price == null || price <= 0) {
       setState(() => _localError = 'Nome e preço são obrigatórios.');
       return;
@@ -154,6 +155,29 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
               quantity: l.quantity >= 1 ? l.quantity : 1,
             ))
         .toList();
+
+    if (productItems.isNotEmpty) {
+      final products = ref.read(productsListProvider).valueOrNull ?? [];
+      final productMap = {for (final p in products) p.id: p};
+      double productsSum = 0;
+      for (final pi in productItems) {
+        final p = productMap[pi.productId];
+        if (p != null) {
+          productsSum += p.value * pi.quantity;
+        }
+      }
+      if (productsSum > 0) {
+        final totalWithProducts = price + productsSum;
+        final useTotal = await _showPriceProductsConfirmDialog(
+          context: context,
+          totalWithProducts: totalWithProducts,
+        );
+        if (!mounted) return;
+        if (useTotal == true) {
+          price = totalWithProducts;
+        }
+      }
+    }
 
     final item = ServiceItem(
       id: widget.serviceId ?? '',
@@ -181,6 +205,35 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
       );
       context.pop();
     }
+  }
+
+  /// Retorna true para usar o valor total, false para manter o valor informado.
+  Future<bool?> _showPriceProductsConfirmDialog({
+    required BuildContext context,
+    required double totalWithProducts,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Preço e produtos'),
+        content: Text(
+          'O preço final informado não está contabilizando os produtos '
+          'atrelados.\n\nO valor total com os produtos seria '
+          '${formatCurrencyValue(totalWithProducts)}.\n\nDeseja salvar com '
+          'esse valor total ou manter o valor informado?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Manter valor informado'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Usar valor total'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _pickProduct(int lineIndex) async {
@@ -413,7 +466,7 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
                         if (_productLines.length > 1)
                           IconButton(
                             icon: const Icon(
-                              Icons.delete_outline,
+                              Icons.delete,
                               color: kDeleteIconColor,
                             ),
                             onPressed: () => _removeProductLine(i),

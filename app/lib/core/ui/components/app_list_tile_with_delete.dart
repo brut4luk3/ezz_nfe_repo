@@ -74,7 +74,7 @@ class AppListTileWithDelete extends StatelessWidget {
           color: Theme.of(context).dividerColor,
         ),
         IconButton(
-          icon: const Icon(Icons.delete_outline, color: kDeleteIconColor),
+          icon: const Icon(Icons.delete, color: kDeleteIconColor),
           onPressed: onDelete,
           style: IconButton.styleFrom(
             padding: const EdgeInsets.only(left: 12, right: 8),
