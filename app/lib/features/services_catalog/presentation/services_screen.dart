@@ -69,7 +69,7 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                         child: ListTile(
                           title: Text(service.name),
                           subtitle: Text(
-                            '${formatCurrency(service.priceCents)}'
+                            '${formatCurrencyValue(service.price)}'
                             '${service.durationMinutes != null ? ' • ${service.durationMinutes} min' : ''}',
                           ),
                           onTap: () => context.go('/services/${service.id}'),

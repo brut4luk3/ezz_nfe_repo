@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/brazilian_currency_formatter.dart';
 import '../../../features/services_catalog/data/service_item_model.dart';
 import '../../../features/services_catalog/presentation/services_providers.dart';
 import 'app_text_field.dart';
@@ -29,6 +30,7 @@ class _SelectAddServiceFormState extends ConsumerState<SelectAddServiceForm> {
   @override
   void initState() {
     super.initState();
+    _priceController.text = '0.00';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.registerSubmit(_submit);
     });
@@ -43,25 +45,26 @@ class _SelectAddServiceFormState extends ConsumerState<SelectAddServiceForm> {
     super.dispose();
   }
 
-  int? _parsePriceCents(String text) {
-    final normalized = text.replaceAll(',', '.');
+  double? _parsePrice(String text) {
+    final normalized = text.trim().replaceAll(',', '.');
+    if (normalized.isEmpty) return null;
     final value = double.tryParse(normalized);
-    if (value == null) return null;
-    return (value * 100).round();
+    if (value == null || value < 0) return null;
+    return value;
   }
 
   Future<String?> _submit() async {
     setState(() => _error = null);
     final name = _nameController.text.trim();
-    final priceCents = _parsePriceCents(_priceController.text.trim());
-    if (name.isEmpty || priceCents == null) {
-      setState(() => _error = 'Nome e preco sao obrigatorios.');
+    final price = _parsePrice(_priceController.text.trim());
+    if (name.isEmpty || price == null || price <= 0) {
+      setState(() => _error = 'Nome e preço são obrigatórios.');
       return null;
     }
     final item = ServiceItem(
       id: '',
       name: name,
-      priceCents: priceCents,
+      price: price,
       addedViaSelectDialog: true,
     );
     final controller = ref.read(servicesControllerProvider.notifier);
@@ -92,11 +95,13 @@ class _SelectAddServiceFormState extends ConsumerState<SelectAddServiceForm> {
         ),
         const SizedBox(height: 12),
         AppTextField(
-          label: 'Preco (ex: 49.90)',
+          label: 'Preço',
           isRequired: true,
           controller: _priceController,
           focusNode: _priceFocus,
+          prefixText: 'R\$ ',
           keyboardType: TextInputType.number,
+          inputFormatters: [CurrencyDigitsFormatter()],
           textInputAction: TextInputAction.done,
         ),
       ],

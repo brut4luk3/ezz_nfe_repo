@@ -35,6 +35,7 @@ class Product {
   final double? quantity;
   final ProductUnit? unit;
   final DateTime? expiryDate;
+  final bool addedViaSelectDialog;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -48,6 +49,7 @@ class Product {
     this.quantity,
     this.unit,
     this.expiryDate,
+    this.addedViaSelectDialog = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -81,6 +83,7 @@ class Product {
       quantity: quantity,
       unit: ProductUnit.fromCode(data['unit'] as String?),
       expiryDate: (data['expiryDate'] as Timestamp?)?.toDate(),
+      addedViaSelectDialog: data['addedViaSelectDialog'] == true,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -105,6 +108,7 @@ class Product {
       'expiryDate': expiryDate != null
           ? Timestamp.fromDate(expiryDate!)
           : null,
+      'addedViaSelectDialog': addedViaSelectDialog,
     };
   }
 }

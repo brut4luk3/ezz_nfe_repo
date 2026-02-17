@@ -66,7 +66,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
     var total = 0;
     for (final s in services) {
       if (_serviceIds.contains(s.id)) {
-        total += s.priceCents;
+        total += (s.price * 100).round();
       }
     }
     return total;
@@ -220,7 +220,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                         .map((s) => SelectOption<String>(
                               value: s.id,
                               label: s.name,
-                              subtitle: formatCurrency(s.priceCents),
+                              subtitle: formatCurrencyValue(s.price),
                             ))
                         .toList(),
                     multiple: true,
