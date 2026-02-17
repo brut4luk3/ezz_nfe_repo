@@ -11,8 +11,9 @@ class AppShellLayout extends ConsumerWidget {
 
   int _indexFromLocation(String location) {
     if (location.startsWith('/clients')) return 1;
-    if (location.startsWith('/services')) return 2;
-    if (location.startsWith('/invoices')) return 3;
+    if (location.startsWith('/products')) return 2;
+    if (location.startsWith('/services')) return 3;
+    if (location.startsWith('/invoices')) return 4;
     return 0;
   }
 
@@ -65,23 +66,27 @@ class AppShellLayout extends ConsumerWidget {
               context.go('/clients');
               break;
             case 2:
-              context.go('/services');
+              context.go('/products');
               break;
             case 3:
+              context.go('/services');
+              break;
+            case 4:
               context.go('/invoices');
               break;
           }
         },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.people), label: 'Clients'),
+          NavigationDestination(icon: Icon(Icons.home), label: 'Início'),
+          NavigationDestination(icon: Icon(Icons.people), label: 'Clientes'),
+          NavigationDestination(icon: Icon(Icons.inventory_2), label: 'Produtos'),
           NavigationDestination(
             icon: Icon(Icons.design_services),
-            label: 'Services',
+            label: 'Serviços',
           ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long),
-            label: 'Invoices',
+            label: 'Notas',
           ),
         ],
       ),

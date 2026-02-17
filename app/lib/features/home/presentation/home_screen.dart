@@ -23,8 +23,14 @@ class HomeScreen extends StatelessWidget {
           onTap: () => context.go('/clients'),
         ),
         _NavCard(
-          title: 'Servicos',
-          subtitle: 'Catalogo de servicos',
+          title: 'Produtos',
+          subtitle: 'Cadastro de produtos para serviços',
+          icon: Icons.inventory_2,
+          onTap: () => context.go('/products'),
+        ),
+        _NavCard(
+          title: 'Serviços',
+          subtitle: 'Catálogo de serviços',
           icon: Icons.design_services,
           onTap: () => context.go('/services'),
         ),

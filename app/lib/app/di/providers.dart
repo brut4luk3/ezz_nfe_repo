@@ -12,6 +12,9 @@ import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/appointments/data/appointments_repository.dart';
 import '../../features/clients/data/clients_repository.dart';
 import '../../features/invoices/data/invoices_repository.dart';
+import '../../features/products/data/product_brands_repository.dart';
+import '../../features/products/data/product_types_repository.dart';
+import '../../features/products/data/products_repository.dart';
 import '../../features/services_catalog/data/services_repository.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
@@ -99,6 +102,33 @@ final clientsRepositoryProvider = Provider<ClientsRepository?>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return null;
   return ClientsRepository(
+    firestore: ref.watch(firestoreProvider),
+    uid: uid,
+  );
+});
+
+final productBrandsRepositoryProvider = Provider<ProductBrandsRepository?>((ref) {
+  final uid = ref.watch(currentUidProvider);
+  if (uid == null) return null;
+  return ProductBrandsRepository(
+    firestore: ref.watch(firestoreProvider),
+    uid: uid,
+  );
+});
+
+final productTypesRepositoryProvider = Provider<ProductTypesRepository?>((ref) {
+  final uid = ref.watch(currentUidProvider);
+  if (uid == null) return null;
+  return ProductTypesRepository(
+    firestore: ref.watch(firestoreProvider),
+    uid: uid,
+  );
+});
+
+final productsRepositoryProvider = Provider<ProductsRepository?>((ref) {
+  final uid = ref.watch(currentUidProvider);
+  if (uid == null) return null;
+  return ProductsRepository(
     firestore: ref.watch(firestoreProvider),
     uid: uid,
   );
