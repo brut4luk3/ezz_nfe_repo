@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ui/components/app_list_tile_with_delete.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/form_clear_link.dart';
 import '../../../core/ui/components/primary_button.dart';
@@ -411,7 +412,10 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
                         ),
                         if (_productLines.length > 1)
                           IconButton(
-                            icon: const Icon(Icons.delete_outline),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: kDeleteIconColor,
+                            ),
                             onPressed: () => _removeProductLine(i),
                           ),
                       ],

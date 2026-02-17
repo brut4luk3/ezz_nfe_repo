@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/di/providers.dart';
 import '../../../core/delete_constraint/delete_constraint_dialog.dart';
 import '../../../core/delete_constraint/delete_constraint_result.dart';
-import '../../../core/ui/components/app_card.dart';
+import '../../../core/ui/components/app_list_tile_with_delete.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/confirm_dialog.dart';
 import '../../../core/ui/components/simple_add_dialog.dart';
@@ -72,14 +72,9 @@ class _ProductBrandsScreenState extends ConsumerState<ProductBrandsScreen> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final brand = filtered[index];
-                      return AppCard(
-                        child: ListTile(
-                          title: Text(brand.name),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => _onDelete(context, brand),
-                          ),
-                        ),
+                      return AppListTileWithDelete(
+                        title: brand.name,
+                        onDelete: () => _onDelete(context, brand),
                       );
                     },
                   );

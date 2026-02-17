@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/delete_constraint/delete_constraint_dialog.dart';
 import '../../../core/delete_constraint/delete_constraint_result.dart';
-import '../../../core/ui/components/app_card.dart';
+import '../../../core/ui/components/app_list_tile_with_delete.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/confirm_dialog.dart';
 import '../../../core/ui/widgets/error_view.dart';
@@ -64,43 +64,36 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final client = filtered[index];
-                      return AppCard(
-                        child: ListTile(
-                          title: Text(client.name),
-                          subtitle: Text(
-                            _subtitle(client),
-                          ),
-                          onTap: () => context.go('/clients/${client.id}'),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () async {
-                              final ok = await showConfirmDialog(
+                      return AppListTileWithDelete(
+                        title: client.name,
+                        subtitle: _subtitle(client),
+                        onTap: () => context.go('/clients/${client.id}'),
+                        onDelete: () async {
+                          final ok = await showConfirmDialog(
+                            context: context,
+                            title: 'Remover cliente',
+                            message:
+                                'Tem certeza que deseja remover este cliente?',
+                          );
+                          if (!ok) return;
+                          final result = await ref
+                              .read(clientsControllerProvider.notifier)
+                              .delete(client);
+                          if (!context.mounted) return;
+                          switch (result) {
+                            case DeleteConstraintViolation(:final entityName, :final linkDescription, :final linkedItems, :final howToProceed):
+                              await showDeleteConstraintDialog(
                                 context: context,
-                                title: 'Remover cliente',
-                                message:
-                                    'Tem certeza que deseja remover este cliente?',
+                                title: 'Nao foi possivel excluir',
+                                entityName: entityName,
+                                linkDescription: linkDescription,
+                                linkedItems: linkedItems,
+                                howToProceed: howToProceed,
                               );
-                              if (!ok) return;
-                              final result = await ref
-                                  .read(clientsControllerProvider.notifier)
-                                  .delete(client);
-                              if (!context.mounted) return;
-                              switch (result) {
-                                case DeleteConstraintViolation(:final entityName, :final linkDescription, :final linkedItems, :final howToProceed):
-                                  await showDeleteConstraintDialog(
-                                    context: context,
-                                    title: 'Nao foi possivel excluir',
-                                    entityName: entityName,
-                                    linkDescription: linkDescription,
-                                    linkedItems: linkedItems,
-                                    howToProceed: howToProceed,
-                                  );
-                                case DeleteConstraintSuccess():
-                                  break;
-                              }
-                            },
-                          ),
-                        ),
+                            case DeleteConstraintSuccess():
+                              break;
+                          }
+                        },
                       );
                     },
                   );

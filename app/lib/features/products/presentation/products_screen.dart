@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/delete_constraint/delete_constraint_dialog.dart';
 import '../../../core/delete_constraint/delete_constraint_result.dart';
-import '../../../core/ui/components/app_card.dart';
+import '../../../core/ui/components/app_list_tile_with_delete.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/confirm_dialog.dart';
 import '../../../core/ui/widgets/error_view.dart';
@@ -70,48 +70,41 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final product = filtered[index];
-                      return AppCard(
-                        child: ListTile(
-                          title: Text(product.name),
-                          subtitle: Text(
-                            _subtitle(product, brands),
-                          ),
-                          onTap: () => context.go('/products/${product.id}'),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () async {
-                              final ok = await showConfirmDialog(
+                      return AppListTileWithDelete(
+                        title: product.name,
+                        subtitle: _subtitle(product, brands),
+                        onTap: () => context.go('/products/${product.id}'),
+                        onDelete: () async {
+                          final ok = await showConfirmDialog(
+                            context: context,
+                            title: 'Remover produto',
+                            message:
+                                'Tem certeza que deseja remover este produto?',
+                          );
+                          if (!ok) return;
+                          final result = await ref
+                              .read(productsControllerProvider.notifier)
+                              .delete(product);
+                          if (!context.mounted) return;
+                          switch (result) {
+                            case DeleteConstraintViolation(
+                                :final entityName,
+                                :final linkDescription,
+                                :final linkedItems,
+                                :final howToProceed
+                              ):
+                              await showDeleteConstraintDialog(
                                 context: context,
-                                title: 'Remover produto',
-                                message:
-                                    'Tem certeza que deseja remover este produto?',
+                                title: 'Não foi possível excluir',
+                                entityName: entityName,
+                                linkDescription: linkDescription,
+                                linkedItems: linkedItems,
+                                howToProceed: howToProceed,
                               );
-                              if (!ok) return;
-                              final result = await ref
-                                  .read(productsControllerProvider.notifier)
-                                  .delete(product);
-                              if (!context.mounted) return;
-                              switch (result) {
-                                case DeleteConstraintViolation(
-                                    :final entityName,
-                                    :final linkDescription,
-                                    :final linkedItems,
-                                    :final howToProceed
-                                  ):
-                                  await showDeleteConstraintDialog(
-                                    context: context,
-                                    title: 'Não foi possível excluir',
-                                    entityName: entityName,
-                                    linkDescription: linkDescription,
-                                    linkedItems: linkedItems,
-                                    howToProceed: howToProceed,
-                                  );
-                                case DeleteConstraintSuccess():
-                                  break;
-                              }
-                            },
-                          ),
-                        ),
+                            case DeleteConstraintSuccess():
+                              break;
+                          }
+                        },
                       );
                     },
                   );
