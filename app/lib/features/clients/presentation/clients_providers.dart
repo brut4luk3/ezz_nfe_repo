@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/di/providers.dart';
+import '../../../core/delete_constraint/delete_constraint_result.dart';
 import '../data/client_model.dart';
 import '../data/clients_repository.dart';
 
@@ -50,16 +51,32 @@ class ClientsController extends StateNotifier<ClientsActionState> {
     }
   }
 
-  Future<void> delete(String id) async {
-    if (_repo == null) return;
+  Future<DeleteConstraintResult> delete(Client client) async {
+    if (_repo == null) {
+      return const DeleteConstraintSuccess();
+    }
     state = const ClientsActionState(isLoading: true);
     try {
-      await _repo.delete(id);
+      final linked = await _repo.getClientsWithIndicatorId(client.id);
+      if (linked.isNotEmpty) {
+        state = const ClientsActionState();
+        return DeleteConstraintViolation(
+          entityName: client.name,
+          linkDescription: 'Este cliente é indicador dos seguintes clientes:',
+          linkedItems: linked.map((c) => c.name).toList(),
+          howToProceed:
+              'Para excluir, acesse cada cliente listado, remova ou altere '
+              'o indicador, e então tente excluir novamente.',
+        );
+      }
+      await _repo.delete(client.id);
       state = const ClientsActionState();
+      return const DeleteConstraintSuccess();
     } catch (_) {
       state = const ClientsActionState(
         errorMessage: 'Nao foi possivel remover o cliente.',
       );
+      return const DeleteConstraintSuccess();
     }
   }
 }

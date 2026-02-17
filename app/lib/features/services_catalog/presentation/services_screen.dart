@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/delete_constraint/delete_constraint_dialog.dart';
+import '../../../core/delete_constraint/delete_constraint_result.dart';
 import '../../../core/ui/components/app_card.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/confirm_dialog.dart';
@@ -81,9 +83,23 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                                     'Tem certeza que deseja remover este servico?',
                               );
                               if (!ok) return;
-                              await ref
+                              final result = await ref
                                   .read(servicesControllerProvider.notifier)
-                                  .delete(service.id);
+                                  .delete(service);
+                              if (!context.mounted) return;
+                              switch (result) {
+                                case DeleteConstraintViolation(:final entityName, :final linkDescription, :final linkedItems, :final howToProceed):
+                                  await showDeleteConstraintDialog(
+                                    context: context,
+                                    title: 'Nao foi possivel excluir',
+                                    entityName: entityName,
+                                    linkDescription: linkDescription,
+                                    linkedItems: linkedItems,
+                                    howToProceed: howToProceed,
+                                  );
+                                case DeleteConstraintSuccess():
+                                  break;
+                              }
                             },
                           ),
                         ),

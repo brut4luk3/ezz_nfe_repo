@@ -37,4 +37,8 @@ class ProductBrandsRepository {
     });
     return docRef.id;
   }
+
+  Future<void> delete(String id) async {
+    await _col.doc(id).delete();
+  }
 }

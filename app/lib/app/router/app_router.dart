@@ -12,7 +12,9 @@ import '../../features/appointments/presentation/appointments_screen.dart';
 import '../../features/appointments/presentation/appointment_form_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/invoices/presentation/invoices_screen.dart';
+import '../../features/products/presentation/product_brands_screen.dart';
 import '../../features/products/presentation/product_form_screen.dart';
+import '../../features/products/presentation/product_types_screen.dart';
 import '../../features/products/presentation/products_screen.dart';
 import '../../features/services_catalog/presentation/services_screen.dart';
 import '../../features/services_catalog/presentation/service_form_screen.dart';
@@ -67,6 +69,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'new',
                 builder: (context, state) => const ProductFormScreen(),
+              ),
+              GoRoute(
+                path: 'types',
+                builder: (context, state) => const ProductTypesScreen(),
+              ),
+              GoRoute(
+                path: 'brands',
+                builder: (context, state) => const ProductBrandsScreen(),
               ),
               GoRoute(
                 path: ':id',

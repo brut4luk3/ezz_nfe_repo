@@ -47,6 +47,18 @@ class ProductsRepository {
     });
   }
 
+  /// Produtos que usam o tipo [typeId].
+  Future<List<Product>> getProductsByTypeId(String typeId) async {
+    final snap = await _col.where('typeId', isEqualTo: typeId).get();
+    return snap.docs.map(Product.fromDoc).toList();
+  }
+
+  /// Produtos que usam a marca [brandId].
+  Future<List<Product>> getProductsByBrandId(String brandId) async {
+    final snap = await _col.where('brandId', isEqualTo: brandId).get();
+    return snap.docs.map(Product.fromDoc).toList();
+  }
+
   Future<void> delete(String id) async {
     await _col.doc(id).delete();
   }

@@ -39,6 +39,32 @@ class SettingsScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      'Cadastros auxiliares',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.category_outlined),
+                      title: const Text('Tipos de produto'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/products/types'),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.sell_outlined),
+                      title: const Text('Marcas de produto'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/products/brands'),
+                    ),
+                  ],
+                ),
+              ),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       'Aparência',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),

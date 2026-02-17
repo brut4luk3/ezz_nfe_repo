@@ -47,6 +47,14 @@ class AppointmentsRepository {
     });
   }
 
+  /// Atendimentos que utilizam o serviço [serviceId].
+  Future<List<Appointment>> getAppointmentsByServiceId(String serviceId) async {
+    final snap = await _col
+        .where('serviceIds', arrayContains: serviceId)
+        .get();
+    return snap.docs.map(Appointment.fromDoc).toList();
+  }
+
   Future<void> delete(String id) async {
     await _col.doc(id).delete();
   }

@@ -47,6 +47,14 @@ class ClientsRepository {
     });
   }
 
+  /// Clientes que têm [indicadorClientId] como indicador.
+  Future<List<Client>> getClientsWithIndicatorId(String indicadorClientId) async {
+    final snap = await _col
+        .where('indicadorClientId', isEqualTo: indicadorClientId)
+        .get();
+    return snap.docs.map(Client.fromDoc).toList();
+  }
+
   Future<void> delete(String id) async {
     await _col.doc(id).delete();
   }
