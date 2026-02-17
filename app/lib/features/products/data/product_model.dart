@@ -29,7 +29,8 @@ class Product {
   final String? brandId;
   /// Marca legada (string direta) para produtos criados antes da entidade ProductBrand.
   final String? brandLegacy;
-  final int valueCents;
+  /// Valor em reais (ex: 59.90).
+  final double value;
   final String? typeId;
   final double? quantity;
   final ProductUnit? unit;
@@ -42,7 +43,7 @@ class Product {
     required this.name,
     this.brandId,
     this.brandLegacy,
-    required this.valueCents,
+    required this.value,
     this.typeId,
     this.quantity,
     this.unit,
@@ -75,7 +76,7 @@ class Product {
       name: (data['name'] ?? '') as String,
       brandId: brandId,
       brandLegacy: brandId == null ? brandLegacy : null,
-      valueCents: (data['valueCents'] ?? 0) as int,
+      value: _parseValue(data),
       typeId: data['typeId'] as String?,
       quantity: quantity,
       unit: ProductUnit.fromCode(data['unit'] as String?),
@@ -85,11 +86,19 @@ class Product {
     );
   }
 
+  static double _parseValue(Map<String, dynamic> data) {
+    final v = data['value'];
+    if (v != null && v is num) return v.toDouble();
+    final cents = data['valueCents'];
+    if (cents != null && cents is num) return cents.toDouble() / 100.0;
+    return 0.0;
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'brandId': brandId,
-      'valueCents': valueCents,
+      'value': value,
       'typeId': typeId,
       'quantity': quantity,
       'unit': unit?.code,

@@ -25,6 +25,7 @@ class AppTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final String? prefixText;
   final bool readOnly;
 
   const AppTextField({
@@ -43,6 +44,7 @@ class AppTextField extends StatefulWidget {
     this.inputFormatters,
     this.prefixIcon,
     this.suffixIcon,
+    this.prefixText,
     this.readOnly = false,
   });
 
@@ -126,6 +128,7 @@ class _AppTextFieldState extends State<AppTextField> {
         labelText: _buildLabelText(),
         border: const OutlineInputBorder(),
         prefixIcon: widget.prefixIcon,
+        prefixText: widget.prefixText,
         suffixIcon: _buildSuffixIcon(),
       ),
     );

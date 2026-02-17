@@ -3,6 +3,11 @@ String formatCurrency(int cents) {
   return 'R\$ ${value.toStringAsFixed(2)}';
 }
 
+/// Formata valor em reais (double).
+String formatCurrencyValue(double value) {
+  return 'R\$ ${value.toStringAsFixed(2)}';
+}
+
 String formatDateTime(DateTime dateTime) {
   final y = dateTime.year.toString().padLeft(4, '0');
   final m = dateTime.month.toString().padLeft(2, '0');

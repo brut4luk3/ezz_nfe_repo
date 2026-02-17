@@ -40,6 +40,14 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   bool _userHasCleared = false;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.productId == null) {
+      _valueController.text = '0.00';
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _valueController.dispose();
@@ -54,7 +62,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     setState(() {
       _userHasCleared = true;
       _nameController.clear();
-      _valueController.clear();
+      _valueController.text = '0.00';
       _quantityController.clear();
       _typeId = null;
       _brandId = null;
@@ -67,17 +75,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   void _setValues(Product product) {
     _nameController.text = product.name;
     _brandId = product.brandId;
-    _valueController.text = BrazilianCurrencyInputFormatter.formatFromCents(
-      product.valueCents,
-    );
+    _valueController.text = product.value.toStringAsFixed(2);
     _quantityController.text = product.quantity?.toString() ?? '';
     _typeId = product.typeId;
     _unit = product.unit;
     _expiryDate = product.expiryDate;
   }
 
-  int? _parseValueCents(String text) {
-    return BrazilianCurrencyInputFormatter.parseToCents(text);
+  double? _parseValue(String text) {
+    final normalized = text.trim().replaceAll(',', '.');
+    if (normalized.isEmpty) return null;
+    final value = double.tryParse(normalized);
+    if (value == null || value < 0) return null;
+    return value;
   }
 
   double? _parseQuantity(String text) {
@@ -87,11 +97,11 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
   bool _isFormValid() {
     final name = _nameController.text.trim();
-    final valueCents = _parseValueCents(_valueController.text.trim());
+    final value = _parseValue(_valueController.text.trim());
     return name.isNotEmpty &&
         _brandId != null &&
-        valueCents != null &&
-        valueCents > 0;
+        value != null &&
+        value > 0;
   }
 
   Widget _buildTypeField() {
@@ -167,7 +177,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   Future<void> _submit() async {
     setState(() => _localError = null);
     final name = _nameController.text.trim();
-    final valueCents = _parseValueCents(_valueController.text.trim());
+    final value = _parseValue(_valueController.text.trim());
     if (name.isEmpty) {
       setState(() => _localError = 'Nome é obrigatório.');
       return;
@@ -176,7 +186,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       setState(() => _localError = 'Marca é obrigatória.');
       return;
     }
-    if (valueCents == null || valueCents <= 0) {
+    if (value == null || value <= 0) {
       setState(
         () => _localError = 'Valor é obrigatório e deve ser maior que zero.',
       );
@@ -193,7 +203,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       id: widget.productId ?? '',
       name: name,
       brandId: _brandId,
-      valueCents: valueCents,
+      value: value,
       typeId: _typeId,
       quantity: quantity,
       unit: _unit,
@@ -275,10 +285,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   controller: _valueController,
                   focusNode: _valueFocus,
                   nextFocusNode: _quantityFocus,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [BrazilianCurrencyInputFormatter()],
+                  prefixText: 'R\$ ',
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyDigitsFormatter()],
                   textInputAction: TextInputAction.next,
                   onChanged: (_) => setState(() {}),
                 ),

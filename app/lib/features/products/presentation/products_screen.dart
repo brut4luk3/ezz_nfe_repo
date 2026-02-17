@@ -132,7 +132,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   String _subtitle(Product product, List<ProductBrand> brands) {
     final parts = <String>[
       _brandNameFor(product, brands),
-      formatCurrency(product.valueCents),
+      formatCurrencyValue(product.value),
     ];
     if (product.quantity != null && product.unit != null) {
       parts.add('${product.quantity} ${product.unit!.code}');
