@@ -47,6 +47,16 @@ class ServicesRepository {
     });
   }
 
+  /// Serviços que possuem o produto [productId] em productItems.
+  Future<List<ServiceItem>> getServicesUsingProductId(String productId) async {
+    final snap = await _col.get();
+    return snap.docs
+        .map(ServiceItem.fromDoc)
+        .where((s) =>
+            s.productItems.any((p) => p.productId == productId))
+        .toList();
+  }
+
   Future<void> delete(String id) async {
     await _col.doc(id).delete();
   }

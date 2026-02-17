@@ -75,15 +75,22 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     });
   }
 
-  void _setValues(ServiceItem item) {
+  void _setValues(ServiceItem item, {Set<String>? validProductIds}) {
     _nameController.text = item.name;
     _priceController.text = item.price.toStringAsFixed(2);
     _setDurationFromMinutes(item.durationMinutes);
     _descriptionController.text = item.description ?? '';
-    _productLines = item.productItems.isEmpty
+    var productItemsToUse = item.productItems;
+    if (validProductIds != null) {
+      productItemsToUse = productItemsToUse
+          .where((p) => validProductIds.contains(p.productId))
+          .toList();
+    }
+    _productLines = productItemsToUse.isEmpty
         ? [_ProductLine()]
-        : item.productItems
-            .map((p) => _ProductLine(productId: p.productId, quantity: p.quantity))
+        : productItemsToUse
+            .map((p) =>
+                _ProductLine(productId: p.productId, quantity: p.quantity))
             .toList();
   }
 
@@ -231,7 +238,13 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
             if (item != null &&
                 _nameController.text.isEmpty &&
                 !_userHasCleared) {
-              _setValues(item);
+              final productsAsync = ref.watch(productsListProvider);
+              final validIds = productsAsync.hasValue
+                  ? (productsAsync.value ?? [])
+                      .map((p) => p.id)
+                      .toSet()
+                  : null;
+              _setValues(item, validProductIds: validIds);
             }
             return _form(actionState);
           },

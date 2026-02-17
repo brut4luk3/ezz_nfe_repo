@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/delete_constraint/delete_constraint_dialog.dart';
+import '../../../core/delete_constraint/delete_constraint_result.dart';
 import '../../../core/ui/components/app_card.dart';
 import '../../../core/ui/components/app_text_field.dart';
 import '../../../core/ui/components/confirm_dialog.dart';
@@ -85,9 +87,28 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                                     'Tem certeza que deseja remover este produto?',
                               );
                               if (!ok) return;
-                              await ref
+                              final result = await ref
                                   .read(productsControllerProvider.notifier)
-                                  .delete(product.id);
+                                  .delete(product);
+                              if (!context.mounted) return;
+                              switch (result) {
+                                case DeleteConstraintViolation(
+                                    :final entityName,
+                                    :final linkDescription,
+                                    :final linkedItems,
+                                    :final howToProceed
+                                  ):
+                                  await showDeleteConstraintDialog(
+                                    context: context,
+                                    title: 'Não foi possível excluir',
+                                    entityName: entityName,
+                                    linkDescription: linkDescription,
+                                    linkedItems: linkedItems,
+                                    howToProceed: howToProceed,
+                                  );
+                                case DeleteConstraintSuccess():
+                                  break;
+                              }
                             },
                           ),
                         ),
