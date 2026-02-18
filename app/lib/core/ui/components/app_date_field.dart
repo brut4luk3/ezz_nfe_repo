@@ -18,6 +18,8 @@ class AppDateField extends StatefulWidget {
   final DateTime? lastDate;
   final FocusNode? focusNode;
   final FocusNode? nextFocusNode;
+  /// Ícone do botão. Quando null: calendário para data, schedule para data+hora.
+  final IconData? icon;
 
   const AppDateField({
     super.key,
@@ -31,6 +33,7 @@ class AppDateField extends StatefulWidget {
     this.lastDate,
     this.focusNode,
     this.nextFocusNode,
+    this.icon,
   });
 
   @override
@@ -147,7 +150,8 @@ class _AppDateFieldState extends State<AppDateField> {
                 onPressed: _onClear,
               ),
             IconButton(
-              icon: const Icon(Icons.calendar_today),
+              icon: Icon(widget.icon ??
+                  (widget.includeTime ? Icons.schedule : Icons.calendar_today)),
               onPressed: _openDatePicker,
             ),
           ],

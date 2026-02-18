@@ -71,8 +71,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final product = filtered[index];
+                      final brand = _brandNameFor(product, brands);
                       return AppListTileWithDelete(
-                        title: product.name,
+                        title: product.displayWithBrand(brand.trim().isEmpty ? null : brand),
                         subtitle: _subtitle(product, brands),
                         onTap: () => context.go('/products/${product.id}'),
                         onDelete: () async {
@@ -146,7 +147,6 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
   String _subtitle(Product product, List<ProductBrand> brands) {
     final parts = <String>[
-      _brandNameFor(product, brands),
       formatCurrencyValue(product.value),
     ];
     if (product.quantity != null && product.unit != null) {

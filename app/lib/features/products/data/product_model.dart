@@ -58,6 +58,13 @@ class Product {
   String brandDisplay(String? brandName) =>
       brandId != null && brandName != null ? brandName : (brandLegacy ?? '');
 
+  /// Formato "Nome - Marca" para seleção/exibição. [brandName] opcional.
+  String displayWithBrand(String? brandName) {
+    final brand = brandDisplay(brandName);
+    if (brand.isEmpty) return name;
+    return '$name - $brand';
+  }
+
   factory Product.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     final quantityVal = data['quantity'];

@@ -11,6 +11,8 @@ import '../../../core/ui/components/select_add_product_form.dart';
 import '../../../core/ui/components/select_dialog.dart';
 import '../../../core/utils/brazilian_currency_formatter.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../features/products/data/product_model.dart';
+import '../../../features/products/presentation/product_brands_providers.dart';
 import '../../../features/products/presentation/products_providers.dart';
 import '../data/service_item_model.dart';
 import 'services_providers.dart';
@@ -139,6 +141,21 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     return name.isNotEmpty && price != null && price > 0;
   }
 
+  double _totalValue(List<Product> products) {
+    final price = _parsePrice(_priceController.text.trim()) ?? 0;
+    final productMap = {for (final p in products) p.id: p};
+    var productsSum = 0.0;
+    for (final line in _productLines) {
+      if (line.productId != null && line.productId!.isNotEmpty) {
+        final p = productMap[line.productId];
+        if (p != null) {
+          productsSum += p.value * line.quantity;
+        }
+      }
+    }
+    return price + productsSum;
+  }
+
   Future<void> _submit() async {
     setState(() => _localError = null);
     final name = _nameController.text.trim();
@@ -245,9 +262,14 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     if (lineIndex < _productLines.length) {
       excludedIds.remove(_productLines[lineIndex].productId);
     }
+    final brands = ref.read(productBrandsListProvider).valueOrNull ?? [];
+    final brandMap = {for (final b in brands) b.id: b.name};
     final options = products
         .where((p) => !excludedIds.contains(p.id))
-        .map((p) => SelectOption<String>(value: p.id, label: p.name))
+        .map((p) => SelectOption<String>(
+              value: p.id,
+              label: p.displayWithBrand(p.brandId != null ? brandMap[p.brandId] : p.brandLegacy),
+            ))
         .toList();
     final result = await showSelectDialog<String>(
       context: context,
@@ -314,6 +336,8 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
 
   Widget _form(ServicesActionState actionState) {
     final products = ref.watch(productsListProvider).valueOrNull ?? [];
+    final brands = ref.watch(productBrandsListProvider).valueOrNull ?? [];
+    final brandMap = {for (final b in brands) b.id: b.name};
 
     return Column(
       children: [
@@ -396,20 +420,16 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Produtos',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 8),
                 ...List.generate(_productLines.length, (i) {
                   final line = _productLines[i];
-                  final productName = line.productId != null
-                      ? products
-                              .where((p) => p.id == line.productId)
-                              .map((p) => p.name)
-                              .firstOrNull ??
-                          'Selecione'
-                      : 'Selecione';
+                  final prod = line.productId != null
+                    ? products
+                        .where((p) => p.id == line.productId)
+                        .firstOrNull
+                    : null;
+                final productName = prod != null
+                    ? prod.displayWithBrand(prod.brandId != null ? brandMap[prod.brandId] : prod.brandLegacy)
+                    : 'Selecione';
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
@@ -525,6 +545,28 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Total',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      formatCurrencyValue(_totalValue(products)),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               PrimaryButton(
                 icon: Icons.save,
                 label: 'Salvar',
