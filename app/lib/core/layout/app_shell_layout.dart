@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/di/providers.dart';
+import '../ui/components/menu_dialog.dart';
 
 class AppShellLayout extends ConsumerWidget {
   final Widget child;
@@ -13,7 +14,9 @@ class AppShellLayout extends ConsumerWidget {
     if (location.startsWith('/clients')) return 1;
     if (location.startsWith('/products')) return 2;
     if (location.startsWith('/services')) return 3;
-    if (location.startsWith('/invoices')) return 4;
+    if (location.startsWith('/invoices') || location.startsWith('/appointments')) {
+      return 4;
+    }
     return 0;
   }
 
@@ -72,7 +75,7 @@ class AppShellLayout extends ConsumerWidget {
               context.go('/services');
               break;
             case 4:
-              context.go('/invoices');
+              showMenuDialog(context);
               break;
           }
         },
@@ -85,8 +88,8 @@ class AppShellLayout extends ConsumerWidget {
             label: 'Serviços',
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long),
-            label: 'Notas',
+            icon: Icon(Icons.menu),
+            label: 'Menu',
           ),
         ],
       ),
