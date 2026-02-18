@@ -260,10 +260,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     return Column(
       children: [
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
               children: [
                 AppTextField(
                   label: 'Nome',
@@ -359,7 +358,6 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               ],
             ),
           ),
-        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

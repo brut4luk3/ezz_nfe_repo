@@ -49,6 +49,7 @@ class InvoicesScreen extends ConsumerWidget {
               return const Center(child: Text('Nenhuma nota encontrada.'));
             }
             return ListView.builder(
+              padding: const EdgeInsets.only(bottom: 88),
               itemCount: invoices.length,
               itemBuilder: (context, index) {
                 final invoice = invoices[index];

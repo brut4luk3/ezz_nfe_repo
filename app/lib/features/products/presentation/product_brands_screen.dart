@@ -69,6 +69,7 @@ class _ProductBrandsScreenState extends ConsumerState<ProductBrandsScreen> {
                     );
                   }
                   return ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 88),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final brand = filtered[index];

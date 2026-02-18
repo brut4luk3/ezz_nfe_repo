@@ -69,6 +69,7 @@ class _ProductTypesScreenState extends ConsumerState<ProductTypesScreen> {
                     );
                   }
                   return ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 88),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final type = filtered[index];

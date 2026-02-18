@@ -179,9 +179,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     return Column(
       children: [
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
               children: [
                 AppTextField(
@@ -308,7 +307,6 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
               ],
             ),
           ),
-        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

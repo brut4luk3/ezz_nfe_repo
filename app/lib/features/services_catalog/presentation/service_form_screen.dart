@@ -318,12 +318,11 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
     return Column(
       children: [
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-              children: [
-                AppTextField(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+            children: [
+              AppTextField(
                   label: 'Nome',
                   isRequired: true,
                   controller: _nameController,
@@ -521,7 +520,6 @@ class _ServiceFormScreenState extends ConsumerState<ServiceFormScreen> {
               ],
             ),
           ),
-        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

@@ -174,10 +174,9 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
     return Column(
       children: [
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
               children: [
           clientsAsync.when(
             loading: () => const LoadingView(),
@@ -270,7 +269,6 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
               ],
             ),
           ),
-        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

@@ -61,6 +61,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                     );
                   }
                   return ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 88),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final client = filtered[index];

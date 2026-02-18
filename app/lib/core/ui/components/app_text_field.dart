@@ -27,6 +27,8 @@ class AppTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final String? prefixText;
   final bool readOnly;
+  /// Espaço extra acima do campo ao ser rolado para exibição com teclado aberto.
+  final EdgeInsets scrollPadding;
 
   const AppTextField({
     super.key,
@@ -46,6 +48,7 @@ class AppTextField extends StatefulWidget {
     this.suffixIcon,
     this.prefixText,
     this.readOnly = false,
+    this.scrollPadding = const EdgeInsets.fromLTRB(20, 100, 20, 20),
   });
 
   @override
@@ -116,6 +119,7 @@ class _AppTextFieldState extends State<AppTextField> {
     return TextField(
       controller: widget.controller,
       focusNode: widget.focusNode,
+      scrollPadding: widget.scrollPadding,
       readOnly: widget.readOnly,
       obscureText: _obscureText,
       textInputAction: effectiveAction,

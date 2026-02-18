@@ -62,6 +62,7 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                     );
                   }
                   return ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 88),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final service = filtered[index];

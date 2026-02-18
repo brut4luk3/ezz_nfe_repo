@@ -35,6 +35,7 @@ class AppointmentsScreen extends ConsumerWidget {
               );
             }
             return ListView.builder(
+              padding: const EdgeInsets.only(bottom: 88),
               itemCount: appointments.length,
               itemBuilder: (context, index) {
                 final appt = appointments[index];
