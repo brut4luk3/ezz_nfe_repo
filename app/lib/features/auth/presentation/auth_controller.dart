@@ -89,6 +89,18 @@ class AuthController extends StateNotifier<AuthState> {
     );
   }
 
+  Future<void> loginWithGoogle() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _authRepository.signInWithGoogle();
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, errorMessage: null);
+    } on AuthFailure catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, errorMessage: e.message);
+    }
+  }
+
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {

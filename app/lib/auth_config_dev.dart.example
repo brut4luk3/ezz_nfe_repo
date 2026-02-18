@@ -1,0 +1,5 @@
+// Copie para auth_config_dev.dart e preencha com o Web Client ID do projeto ezz-nfe-dev.
+// Obtenha em: Google Cloud Console → APIs e serviços → Credenciais → Cliente da Web.
+// Habilite o provedor "Google" em Firebase Console → Authentication → Sign-in method.
+
+const String kGoogleWebClientId = 'YOUR_DEV_WEB_CLIENT_ID';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sign_in_button/sign_in_button.dart';
 
 import '../../../app/di/providers.dart';
 import '../../../core/ui/components/app_text_field.dart';
@@ -84,6 +85,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              IgnorePointer(
+                ignoring: authState.isLoading,
+                child: Opacity(
+                  opacity: authState.isLoading ? 0.6 : 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Transform.scale(
+                        scale: 1.25,
+                        alignment: Alignment.center,
+                        child: SignInButton(
+                          Buttons.google,
+                          text: 'Entrar com Google',
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          textStyle: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF1F1F1F),
+                          ),
+                          onPressed: () => ref
+                              .read(authControllerProvider.notifier)
+                              .loginWithGoogle(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               AppTextField(
                 label: 'Email',
                 isRequired: true,

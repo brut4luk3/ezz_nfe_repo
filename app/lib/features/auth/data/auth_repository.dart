@@ -7,6 +7,7 @@ class AuthFailure implements Exception {
 
 abstract class AuthRepository {
   Stream<User?> authStateChanges();
+  Future<void> signInWithGoogle();
   Future<void> signInWithEmail(String email, String password);
   Future<void> registerWithEmail(
     String email,

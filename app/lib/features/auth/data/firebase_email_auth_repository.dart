@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../../app/config/auth_config.dart';
 import 'auth_repository.dart';
 
 class FirebaseEmailAuthRepository implements AuthRepository {
@@ -18,6 +20,42 @@ class FirebaseEmailAuthRepository implements AuthRepository {
 
   @override
   Stream<User?> authStateChanges() => _auth.authStateChanges();
+
+  @override
+  Future<void> signInWithGoogle() async {
+    try {
+      final webClientId = kGoogleWebClientId;
+    final googleSignIn = GoogleSignIn(
+        serverClientId: webClientId.isEmpty ? null : webClientId,
+      );
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user;
+      if (user != null) {
+        final parts = (user.displayName ?? '').trim().split(RegExp(r'\s+'));
+        final firstName = parts.isNotEmpty ? parts.first : null;
+        final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : null;
+        await _upsertUserDocument(
+          user,
+          isNewUser: userCredential.additionalUserInfo?.isNewUser ?? false,
+          firstName: firstName,
+          lastName: lastName,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(_mapFirebaseAuthError(e));
+    } catch (_) {
+      throw const AuthFailure('Nao foi possivel entrar com Google.');
+    }
+  }
 
   @override
   Future<void> signInWithEmail(String email, String password) async {

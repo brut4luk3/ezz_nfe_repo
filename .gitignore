@@ -1,8 +1,10 @@
-﻿# Firebase credentials (NUNCA commitar)
+# Firebase credentials (NUNCA commitar)
 **/google-services.json
 **/GoogleService-Info.plist
 **/firebase_options_dev.dart
 **/firebase_options_prod.dart
+**/auth_config_dev.dart
+**/auth_config_prod.dart
 
 # Flutter
 .dart_tool/
