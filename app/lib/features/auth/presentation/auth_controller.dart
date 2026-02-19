@@ -49,15 +49,18 @@ class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
   final BiometricService _biometricService;
   final SecureKvService _secureKvService;
+  final Future<void> Function()? _onLogout;
   StreamSubscription<User?>? _authSub;
 
   AuthController({
     required AuthRepository authRepository,
     required BiometricService biometricService,
     required SecureKvService secureKvService,
+    Future<void> Function()? onLogout,
   })  : _authRepository = authRepository,
         _biometricService = biometricService,
         _secureKvService = secureKvService,
+        _onLogout = onLogout,
         super(const AuthState()) {
     _authSub = _authRepository.authStateChanges().listen(_onAuthChanged);
   }
@@ -139,6 +142,7 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _authRepository.signOut();
+    await _onLogout?.call();
     if (!mounted) return;
     state = state.copyWith(
       biometricUnlocked: false,

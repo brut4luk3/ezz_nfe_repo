@@ -9,7 +9,9 @@ import '../theme/theme_controller.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/data/firebase_email_auth_repository.dart';
 import '../../features/auth/presentation/auth_controller.dart';
+import '../config/auth_config.dart';
 import '../../features/appointments/data/appointments_repository.dart';
+import '../../features/appointments/data/google_calendar_service.dart';
 import '../../features/clients/data/clients_repository.dart';
 import '../../features/invoices/data/invoices_repository.dart';
 import '../../features/products/data/product_brands_repository.dart';
@@ -56,6 +58,7 @@ final authControllerProvider =
     authRepository: ref.watch(authRepositoryProvider),
     biometricService: ref.watch(biometricServiceProvider),
     secureKvService: ref.watch(secureKvServiceProvider),
+    onLogout: () => ref.read(googleCalendarServiceProvider).revokeAccess(),
   );
 });
 
@@ -150,6 +153,10 @@ final appointmentsRepositoryProvider = Provider<AppointmentsRepository?>((ref) {
     firestore: ref.watch(firestoreProvider),
     uid: uid,
   );
+});
+
+final googleCalendarServiceProvider = Provider<GoogleCalendarService>((ref) {
+  return GoogleCalendarService(webClientId: kGoogleWebClientId);
 });
 
 final invoicesRepositoryProvider = Provider<InvoicesRepository?>((ref) {

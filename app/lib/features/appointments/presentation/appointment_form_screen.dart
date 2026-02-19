@@ -23,13 +23,16 @@ import '../../clients/data/client_model.dart';
 import '../../clients/presentation/clients_providers.dart';
 import '../../services_catalog/data/service_item_model.dart';
 import '../../services_catalog/presentation/services_providers.dart';
+import '../../../app/di/providers.dart';
 import '../data/appointment_model.dart';
+import '../data/google_calendar_service.dart';
 import 'appointments_providers.dart';
 
 class _ProductLine {
   String? productId;
+  String productName;
   double quantity;
-  _ProductLine({this.productId, this.quantity = 1});
+  _ProductLine({this.productId, this.productName = '', this.quantity = 1});
 }
 
 class AppointmentFormScreen extends ConsumerStatefulWidget {
@@ -48,6 +51,9 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
   List<_ProductLine> _productLines = [_ProductLine()];
   DateTime _scheduledAt = DateTime.now();
   bool _chargeDeposit = false;
+  /// Marcar na Google Agenda. Apenas para agendamentos de serviços (!isOnlySale).
+  bool _addToCalendar = true;
+  String? _calendarEventId;
   final _depositController = TextEditingController();
   final _notesController = TextEditingController();
   String? _localError;
@@ -75,6 +81,8 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
       _productLines = [_ProductLine()];
       _scheduledAt = DateTime.now();
       _chargeDeposit = false;
+      _addToCalendar = true;
+      _calendarEventId = null;
       _depositController.text = '0.00';
       _notesController.clear();
       _localError = null;
@@ -84,16 +92,22 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
   void _setValues(Appointment appt) {
     _clientId = appt.clientId;
     _isOnlySale = appt.isOnlySale;
-    _serviceLines = appt.serviceIds.isEmpty
+    _serviceLines = appt.serviceItems.isEmpty
         ? [null]
-        : appt.serviceIds.map<String?>((id) => id).toList();
+        : appt.serviceItems.map<String?>((s) => s.serviceId).toList();
     _productLines = appt.productItems.isEmpty
         ? [_ProductLine()]
         : appt.productItems
-            .map((p) => _ProductLine(productId: p.productId, quantity: p.quantity))
+            .map((p) => _ProductLine(
+                  productId: p.productId,
+                  productName: p.productName,
+                  quantity: p.quantity,
+                ))
             .toList();
     _scheduledAt = appt.scheduledAt;
     _chargeDeposit = appt.chargeDeposit;
+    _addToCalendar = appt.addToCalendar;
+    _calendarEventId = appt.calendarEventId;
     _depositController.text =
         appt.deposit != null ? appt.deposit!.toStringAsFixed(2) : '0.00';
     _notesController.text = appt.notes ?? '';
@@ -204,9 +218,12 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
           SelectAddProductForm(registerSubmit: registerSubmit),
     );
     if (result != null && result.isNotEmpty && mounted) {
+      final productId = result.first;
+      final product = products.firstWhere((p) => p.id == productId);
       setState(() {
         if (lineIndex < _productLines.length) {
-          _productLines[lineIndex].productId = result.first;
+          _productLines[lineIndex].productId = productId;
+          _productLines[lineIndex].productName = product.name;
         }
       });
     }
@@ -237,6 +254,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
   Future<void> _submit(
     List<ServiceItem> services,
     List<Product> products,
+    List<Client> clients,
   ) async {
     setState(() => _localError = null);
     if (_clientId == null) {
@@ -257,16 +275,29 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
         return;
       }
     }
-    final serviceIds = _serviceLines
+    final serviceMap = {for (final s in services) s.id: s};
+    final serviceItems = _serviceLines
         .whereType<String>()
         .where((s) => s.trim().isNotEmpty)
+        .map((id) => AppointmentServiceItem(
+              serviceId: id,
+              serviceName: serviceMap[id]?.name ?? '',
+            ))
         .toList();
+    final productMap = {for (final p in products) p.id: p};
     final productItems = _productLines
         .where((l) => (l.productId ?? '').trim().isNotEmpty)
-        .map((l) => AppointmentProductItem(
-              productId: l.productId!,
-              quantity: l.quantity >= 1 ? l.quantity : 1,
-            ))
+        .map((l) {
+          final p = productMap[l.productId];
+          final name = l.productName.isNotEmpty
+              ? l.productName
+              : (p?.name ?? '');
+          return AppointmentProductItem(
+            productId: l.productId!,
+            productName: name,
+            quantity: l.quantity >= 1 ? l.quantity : 1,
+          );
+        })
         .toList();
     final total = _totalValue(services, products);
     final deposit = _chargeDeposit ? _parseDeposit() : null;
@@ -274,7 +305,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
       id: widget.appointmentId ?? '',
       clientId: _clientId!,
       isOnlySale: _isOnlySale,
-      serviceIds: serviceIds,
+      serviceItems: serviceItems,
       productItems: productItems,
       total: total,
       scheduledAt: _scheduledAt,
@@ -283,11 +314,14 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
+      addToCalendar: _addToCalendar,
+      calendarEventId: _calendarEventId,
     );
 
     final controller = ref.read(appointmentsControllerProvider.notifier);
+    String? createdId;
     if (widget.appointmentId == null) {
-      await controller.create(appt);
+      createdId = await controller.create(appt);
     } else {
       await controller.update(widget.appointmentId!, appt);
     }
@@ -295,9 +329,51 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
     if (!mounted) return;
     final state = ref.read(appointmentsControllerProvider);
     if (state.errorMessage == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Atendimento salvo.')));
+      if (appt.canAddToCalendar && createdId != null) {
+        final client = clients.firstWhere((c) => c.id == _clientId);
+        final calendarService = ref.read(googleCalendarServiceProvider);
+        final result = await calendarService.createEvent(
+          appointment: appt.copyWith(id: createdId),
+          client: client,
+        );
+        if (!mounted) return;
+        switch (result) {
+          case GoogleCalendarSuccess(:final eventId):
+            if (eventId.isNotEmpty) {
+              await controller.update(
+                createdId,
+                appt.copyWith(id: createdId, calendarEventId: eventId),
+              );
+            }
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Atendimento salvo. Evento criado na agenda.'),
+              ),
+            );
+            break;
+          case GoogleCalendarUserCancelled():
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Atendimento salvo. Para adicionar à agenda, autorize o acesso na próxima vez.',
+                ),
+              ),
+            );
+            break;
+          case GoogleCalendarError(:final message):
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Atendimento salvo. $message'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Atendimento salvo.')),
+        );
+      }
       context.pop();
     }
   }
@@ -461,9 +537,12 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                         .where((p) => p.id == line.productId)
                         .firstOrNull
                     : null;
-                final productName = prod != null
-                    ? prod.displayWithBrand(prod.brandId != null ? brandMap[prod.brandId] : prod.brandLegacy)
-                    : 'Selecione';
+                final productDisplay = prod != null
+                    ? prod.displayWithBrand(
+                        prod.brandId != null
+                            ? brandMap[prod.brandId]
+                            : prod.brandLegacy)
+                    : (line.productName.isNotEmpty ? line.productName : 'Selecione');
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
@@ -480,7 +559,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                               border: OutlineInputBorder(),
                               suffixIcon: Icon(Icons.arrow_drop_down),
                             ),
-                            child: Text(productName),
+                              child: Text(productDisplay),
                           ),
                         ),
                       ),
@@ -567,6 +646,16 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                   icon: Icons.schedule,
                 ),
                 const SizedBox(height: 12),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Marcar na agenda'),
+                  subtitle: const Text(
+                    'Criar evento na Google Agenda (será solicitada autorização)',
+                  ),
+                  value: _addToCalendar,
+                  onChanged: (v) => setState(() => _addToCalendar = v),
+                ),
+                const SizedBox(height: 12),
               ],
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -643,8 +732,9 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                     ? () async {
                         final s = ref.read(servicesListProvider).valueOrNull;
                         final p = ref.read(productsListProvider).valueOrNull;
-                        if (s != null && p != null) {
-                          await _submit(s, p);
+                        final c = clientsAsync.valueOrNull;
+                        if (s != null && p != null && c != null) {
+                          await _submit(s, p, c);
                         }
                       }
                     : null,

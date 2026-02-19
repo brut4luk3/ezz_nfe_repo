@@ -34,22 +34,31 @@ String _serviceOrProductLabel(
   List<Product>? products,
   List<ProductBrand>? brands,
 ) {
-  if (!appt.isOnlySale && appt.serviceIds.isNotEmpty && services != null) {
-    final serviceMap = {for (final s in services) s.id: s};
-    final names = <String>[];
-    for (final sid in appt.serviceIds) {
-      final s = serviceMap[sid];
-      if (s != null && s.name.isNotEmpty) names.add(s.name);
+  if (!appt.isOnlySale && appt.serviceItems.isNotEmpty) {
+    final names = appt.serviceItems
+        .map((s) => s.serviceName)
+        .where((n) => n.isNotEmpty)
+        .toList();
+    if (names.isEmpty && services != null) {
+      final serviceMap = {for (final s in services) s.id: s};
+      for (final item in appt.serviceItems) {
+        final s = serviceMap[item.serviceId];
+        if (s != null && s.name.isNotEmpty) names.add(s.name);
+      }
     }
     if (names.isNotEmpty) return names.join(', ');
   }
-  if (appt.isOnlySale && appt.productItems.isNotEmpty && products != null) {
-    final productMap = {for (final p in products) p.id: p};
-    final brandMap = brands != null ? {for (final b in brands) b.id: b.name} : null;
+  if (appt.isOnlySale && appt.productItems.isNotEmpty) {
     final first = appt.productItems.first;
-    final p = productMap[first.productId];
-    if (p != null) {
-      return p.displayWithBrand(brandMap?[p.brandId] ?? p.brandLegacy);
+    if (first.productName.isNotEmpty) return first.productName;
+    if (products != null) {
+      final productMap = {for (final p in products) p.id: p};
+      final brandMap =
+          brands != null ? {for (final b in brands) b.id: b.name} : null;
+      final p = productMap[first.productId];
+      if (p != null) {
+        return p.displayWithBrand(brandMap?[p.brandId] ?? p.brandLegacy);
+      }
     }
   }
   return '—';

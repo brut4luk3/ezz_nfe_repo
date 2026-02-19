@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/di/providers.dart';
 import '../data/appointment_model.dart';
 import '../data/appointments_repository.dart';
+import '../data/google_calendar_service.dart';
 
 final appointmentsListProvider = StreamProvider<List<Appointment>>((ref) {
   final repo = ref.watch(appointmentsRepositoryProvider);
@@ -19,8 +20,10 @@ class AppointmentsActionState {
 
 class AppointmentsController extends StateNotifier<AppointmentsActionState> {
   final AppointmentsRepository? _repo;
+  final GoogleCalendarService _calendarService;
 
-  AppointmentsController(this._repo) : super(const AppointmentsActionState());
+  AppointmentsController(this._repo, this._calendarService)
+      : super(const AppointmentsActionState());
 
   Future<String?> create(Appointment appointment) async {
     if (_repo == null) return null;
@@ -54,6 +57,11 @@ class AppointmentsController extends StateNotifier<AppointmentsActionState> {
     if (_repo == null) return;
     state = const AppointmentsActionState(isLoading: true);
     try {
+      final appt = await _repo.getById(id);
+      final eventId = appt?.calendarEventId;
+      if (eventId != null && eventId.isNotEmpty) {
+        await _calendarService.deleteEvent(eventId);
+      }
       await _repo.delete(id);
       state = const AppointmentsActionState();
     } catch (_) {
@@ -67,7 +75,10 @@ class AppointmentsController extends StateNotifier<AppointmentsActionState> {
 final appointmentsControllerProvider =
     StateNotifierProvider<AppointmentsController, AppointmentsActionState>(
         (ref) {
-  return AppointmentsController(ref.watch(appointmentsRepositoryProvider));
+  return AppointmentsController(
+    ref.watch(appointmentsRepositoryProvider),
+    ref.watch(googleCalendarServiceProvider),
+  );
 });
 
 final appointmentByIdProvider =
