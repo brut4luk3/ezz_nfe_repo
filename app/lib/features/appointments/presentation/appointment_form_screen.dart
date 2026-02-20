@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,6 +36,58 @@ class _ProductLine {
   _ProductLine({this.productId, this.productName = '', this.quantity = 1});
 }
 
+/// Diálogo para editar o valor total. Usa StatefulWidget para que o controller
+/// seja descartado apenas quando o diálogo for removido da árvore.
+class _EditTotalDialogContent extends StatefulWidget {
+  final TextEditingController controller;
+
+  const _EditTotalDialogContent({required this.controller});
+
+  @override
+  State<_EditTotalDialogContent> createState() =>
+      _EditTotalDialogContentState();
+}
+
+class _EditTotalDialogContentState extends State<_EditTotalDialogContent> {
+  @override
+  void dispose() {
+    widget.controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Editar valor total'),
+      content: AppTextField(
+        label: 'Total',
+        controller: widget.controller,
+        prefixText: 'R\$ ',
+        keyboardType: TextInputType.number,
+        inputFormatters: [CurrencyDigitsFormatter()],
+        onChanged: (_) {},
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () {
+            final text =
+                widget.controller.text.trim().replaceAll(',', '.');
+            final value = double.tryParse(text);
+            if (value != null && value >= 0) {
+              Navigator.of(context).pop<double>(value);
+            }
+          },
+          child: const Text('Confirmar'),
+        ),
+      ],
+    );
+  }
+}
+
 class AppointmentFormScreen extends ConsumerStatefulWidget {
   final String? appointmentId;
   const AppointmentFormScreen({super.key, this.appointmentId});
@@ -54,6 +107,8 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
   /// Marcar na Google Agenda. Apenas para agendamentos de serviços (!isOnlySale).
   bool _addToCalendar = true;
   String? _calendarEventId;
+  /// Total editado manualmente pelo usuário. Null = usar o calculado.
+  double? _totalOverride;
   final _depositController = TextEditingController();
   final _notesController = TextEditingController();
   String? _localError;
@@ -83,6 +138,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
       _chargeDeposit = false;
       _addToCalendar = true;
       _calendarEventId = null;
+      _totalOverride = null;
       _depositController.text = '0.00';
       _notesController.clear();
       _localError = null;
@@ -108,6 +164,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
     _chargeDeposit = appt.chargeDeposit;
     _addToCalendar = appt.addToCalendar;
     _calendarEventId = appt.calendarEventId;
+    _totalOverride = appt.total;
     _depositController.text =
         appt.deposit != null ? appt.deposit!.toStringAsFixed(2) : '0.00';
     _notesController.text = appt.notes ?? '';
@@ -143,6 +200,46 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
     final value = double.tryParse(text);
     if (value == null || value < 0) return null;
     return value;
+  }
+
+  Future<void> _showEditTotalDialog(double currentTotal) async {
+    final controller = TextEditingController(
+      text: currentTotal.toStringAsFixed(2),
+    );
+    final result = await showDialog<double>(
+      context: context,
+      builder: (ctx) => _EditTotalDialogContent(
+        controller: controller,
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() => _totalOverride = result);
+    }
+  }
+
+  /// Retorna true para usar o valor calculado, false para manter o informado.
+  Future<bool?> _showTotalLessThanSumDialog(double calculatedSum) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Valor total'),
+        content: Text(
+          'O valor total informado é menor que a soma dos serviços e produtos.\n\n'
+          'O valor calculado seria ${formatCurrencyValue(calculatedSum)}.\n\n'
+          'Deseja salvar com esse valor total ou manter o valor informado?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Manter valor informado'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Usar valor calculado'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _pickService(int lineIndex) async {
@@ -299,7 +396,15 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
           );
         })
         .toList();
-    final total = _totalValue(services, products);
+    final calculatedSum = _totalValue(services, products);
+    var effectiveTotal = _totalOverride ?? calculatedSum;
+    if (effectiveTotal < calculatedSum && calculatedSum > 0) {
+      final useCalculated = await _showTotalLessThanSumDialog(calculatedSum);
+      if (!mounted) return;
+      if (useCalculated == true) {
+        effectiveTotal = calculatedSum;
+      }
+    }
     final deposit = _chargeDeposit ? _parseDeposit() : null;
     final appt = Appointment(
       id: widget.appointmentId ?? '',
@@ -307,7 +412,7 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
       isOnlySale: _isOnlySale,
       serviceItems: serviceItems,
       productItems: productItems,
-      total: total,
+      total: effectiveTotal,
       scheduledAt: _scheduledAt,
       chargeDeposit: _chargeDeposit,
       deposit: deposit,
@@ -336,6 +441,21 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
           appointment: appt.copyWith(id: createdId),
           client: client,
         );
+        if (kDebugMode) {
+          debugPrint('[GoogleCalendar] Resultado createEvent: $result');
+          debugPrint('[GoogleCalendar] Tipo: ${result.runtimeType}');
+          switch (result) {
+            case GoogleCalendarSuccess(:final eventId):
+              debugPrint('[GoogleCalendar] Success - eventId: $eventId');
+              break;
+            case GoogleCalendarUserCancelled():
+              debugPrint('[GoogleCalendar] UserCancelled - usuário cancelou ou não autorizou');
+              break;
+            case GoogleCalendarError(:final message):
+              debugPrint('[GoogleCalendar] Error - message: $message');
+              break;
+          }
+        }
         if (!mounted) return;
         switch (result) {
           case GoogleCalendarSuccess(:final eventId):
@@ -714,12 +834,33 @@ class _AppointmentFormScreenState extends ConsumerState<AppointmentFormScreen> {
                           ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      formatCurrencyValue(total),
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          formatCurrencyValue(
+                              _totalOverride ?? total),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(
+                                color: Colors.green,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 20),
+                          onPressed: () => _showEditTotalDialog(
+                            _totalOverride ?? total,
                           ),
+                          tooltip: 'Editar valor total',
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(),
+                          style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

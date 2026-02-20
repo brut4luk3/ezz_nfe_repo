@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart';
@@ -53,9 +54,24 @@ class GoogleCalendarService {
   /// Se falhar, usa signIn() para solicitar consentimento.
   Future<AuthClient?> _getAuthenticatedClient() async {
     var account = await _signIn.signInSilently();
+    if (kDebugMode) {
+      debugPrint('[GoogleCalendar] signInSilently: ${account != null ? "ok" : "null"}');
+    }
     account ??= await _signIn.signIn();
-    if (account == null) return null;
-    return _signIn.authenticatedClient();
+    if (account == null) {
+      if (kDebugMode) {
+        debugPrint('[GoogleCalendar] signIn retornou null - usuário cancelou ou não selecionou conta');
+      }
+      return null;
+    }
+    if (kDebugMode) {
+      debugPrint('[GoogleCalendar] Conta: ${account.email}');
+    }
+    final client = await _signIn.authenticatedClient();
+    if (kDebugMode && client == null) {
+      debugPrint('[GoogleCalendar] authenticatedClient retornou null');
+    }
+    return client;
   }
 
   /// Cria um evento na Google Agenda do usuário.
@@ -96,11 +112,18 @@ class GoogleCalendarService {
       );
 
       final created = await calendarApi.events.insert(event, 'primary');
+      if (kDebugMode) {
+        debugPrint('[GoogleCalendar] Evento criado com id: ${created.id}');
+      }
       return GoogleCalendarSuccess(created.id ?? '');
-    } catch (e) {
+    } catch (e, st) {
       final msg = e is Exception
           ? e.toString().replaceFirst('Exception: ', '')
           : e.toString();
+      if (kDebugMode) {
+        debugPrint('[GoogleCalendar] Exception: $e');
+        debugPrint('[GoogleCalendar] StackTrace: $st');
+      }
       return GoogleCalendarError(
         msg.isEmpty ? 'Erro ao acessar a agenda' : msg,
       );
